@@ -13,8 +13,16 @@ export const AuthProvider = ({ children }) => {
     const storedToken = getToken();
     if (storedToken) {
       setTokenState(storedToken);
-      // For now, set a basic mock user payload from token or default
-      setUser({ id: 1, email: 'user@example.com', name: 'TaskFlow User' });
+      try {
+        const storedUser = localStorage.getItem('taskflow_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          setUser({ id: 1, email: 'user@example.com', name: 'TaskFlow User' });
+        }
+      } catch (e) {
+        setUser({ id: 1, email: 'user@example.com', name: 'TaskFlow User' });
+      }
     }
     setLoading(false);
   }, []);
@@ -27,7 +35,14 @@ export const AuthProvider = ({ children }) => {
   const login = (newToken, userData) => {
     saveToken(newToken);
     setTokenState(newToken);
-    setUser(userData || { id: 1, email: 'user@example.com', name: 'TaskFlow User' });
+    if (userData) {
+      localStorage.setItem('taskflow_user', JSON.stringify(userData));
+      setUser(userData);
+    } else {
+      const fallbackUser = { id: 1, email: 'user@example.com', name: 'TaskFlow User' };
+      localStorage.setItem('taskflow_user', JSON.stringify(fallbackUser));
+      setUser(fallbackUser);
+    }
   };
 
   /**
@@ -35,6 +50,7 @@ export const AuthProvider = ({ children }) => {
    */
   const logout = () => {
     removeToken();
+    localStorage.removeItem('taskflow_user');
     setTokenState(null);
     setUser(null);
   };
