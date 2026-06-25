@@ -1,14 +1,15 @@
 import React from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, History, Settings, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, History, Settings, LogOut, User, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROUTES } from '../../constants/routes';
 
 /**
  * Sidebar navigation component.
  * Displays brand logo, active navigation links, user details, and logout button.
+ * Supports drawer close action for mobile toggle layout.
  */
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,6 +17,7 @@ const Sidebar = () => {
   const handleLogout = () => {
     logout();
     navigate(ROUTES.LOGIN);
+    if (onClose) onClose();
   };
 
   const navItems = [
@@ -46,9 +48,11 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0 border-r border-slate-800 select-none">
-      {/* Brand Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
+    <aside className={`w-64 bg-slate-900 text-white flex flex-col h-screen select-none border-r border-slate-800 shrink-0 ${
+      isOpen ? 'relative' : ''
+    }`}>
+      {/* Brand Logo & Mobile Close */}
+      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
         <div className="flex items-center space-x-2.5">
           <div className="h-8 w-8 bg-brand-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-500/20">
             ⚡
@@ -57,6 +61,16 @@ const Sidebar = () => {
             TaskFlow
           </span>
         </div>
+        {/* Mobile Close Button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -82,6 +96,7 @@ const Sidebar = () => {
             <NavLink
               key={item.name}
               to={item.path}
+              onClick={() => { if (onClose) onClose(); }}
               className={({ isActive: linkActive }) =>
                 `flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition duration-150 ${
                   isActive || linkActive

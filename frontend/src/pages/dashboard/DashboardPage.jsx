@@ -99,7 +99,7 @@ const DashboardPage = () => {
         setStatistics(response.data);
       }
     } catch {
-      // Silently fail — stats are non-critical
+      // Silently fail
     } finally {
       setStatsLoading(false);
     }
@@ -114,7 +114,7 @@ const DashboardPage = () => {
         setActivities(response.data || []);
       }
     } catch {
-      // Silently fail — activity is non-critical
+      // Silently fail
     } finally {
       setActivityLoading(false);
     }
@@ -201,20 +201,20 @@ const DashboardPage = () => {
         onCancel={handleDeleteCancel}
       />
 
-      <div className="space-y-8 pb-10">
+      <div className="space-y-6 sm:space-y-8 pb-10 w-full overflow-hidden">
         {/* ── Page Title ───────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
               Dashboard
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Manage and track all your tasks in one place
             </p>
           </div>
           <button
             onClick={refreshDashboard}
-            className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium transition cursor-pointer"
+            className="flex items-center justify-center space-x-2 px-4 py-2 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium transition cursor-pointer self-start sm:self-auto"
             title="Refresh Dashboard"
           >
             <RefreshCw className="h-4 w-4" />
@@ -223,7 +223,7 @@ const DashboardPage = () => {
         </div>
 
         {/* ── Statistics Cards ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
           {statsLoading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
@@ -243,17 +243,20 @@ const DashboardPage = () => {
         </div>
 
         {/* ── Main Content Grid ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* ── Task List Panel (2/3 width) ─────────────────────────────────────── */}
-          <div className="xl:col-span-2 space-y-5">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8 w-full">
+          {/* ── Task List Panel (2/3 width) ── */}
+          <div className="xl:col-span-2 space-y-5 w-full min-w-0">
             {/* Filters & Sorting Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <FilterTabs
-                activeStatus={activeStatus}
-                onStatusChange={handleStatusChange}
-              />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 w-full">
+              {/* Horizontal Scrollable Tabs container on mobile */}
+              <div className="overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full sm:w-auto -mx-4 sm:-mx-0 px-4 sm:px-0">
+                <FilterTabs
+                  activeStatus={activeStatus}
+                  onStatusChange={handleStatusChange}
+                />
+              </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
                 <ArrowUpDown className="h-4 w-4 text-slate-400" />
                 <select
                   value={sortOrder}
@@ -288,7 +291,7 @@ const DashboardPage = () => {
               </div>
             ) : tasksError ? (
               /* Error State */
-              <div className="bg-white border border-danger-100 rounded-xl p-8 text-center space-y-3">
+              <div className="bg-white border border-danger-100 rounded-xl p-8 text-center space-y-3 w-full">
                 <div className="h-10 w-10 bg-danger-50 rounded-full flex items-center justify-center mx-auto">
                   <ClipboardList className="h-5 w-5 text-danger-500" />
                 </div>
@@ -302,7 +305,7 @@ const DashboardPage = () => {
               </div>
             ) : tasks.length === 0 ? (
               /* Empty State */
-              <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center space-y-4">
+              <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-8 sm:p-12 text-center space-y-4 w-full">
                 <div className="text-4xl">📋</div>
                 <div>
                   <h3 className="text-base font-bold text-slate-800">No Tasks Yet</h3>
@@ -324,7 +327,7 @@ const DashboardPage = () => {
               </div>
             ) : (
               /* Task Cards */
-              <div className="space-y-3">
+              <div className="space-y-3 w-full">
                 {tasks.map((task) => (
                   <TaskCard
                     key={task.id}
@@ -345,9 +348,9 @@ const DashboardPage = () => {
             )}
           </div>
 
-          {/* ── Recent Activity Panel (1/3 width) ───────────────────────────────── */}
-          <div className="xl:col-span-1">
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-soft-sm sticky top-24">
+          {/* ── Recent Activity Panel (1/3 width) ── */}
+          <div className="xl:col-span-1 w-full min-w-0" id="activity">
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-soft-sm xl:sticky xl:top-24 w-full">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-base font-bold text-slate-900 font-sans">
                   Recent Activity
