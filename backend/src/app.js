@@ -3,7 +3,41 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const authRoutes = require('./routes/authRoutes');
+
 const app = express();
+
+// Swagger Configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'TaskFlow API Documentation',
+      version: '1.0.0',
+      description: 'API documentation for the TaskFlow project management portal'
+    },
+    servers: [
+      {
+        url: 'http://localhost:5000',
+        description: 'Development Server'
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    }
+  },
+  apis: ['./src/routes/*.js']
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
 // Security Middlewares
 app.use(helmet());
@@ -19,6 +53,12 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 // Parsing Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Swagger Documentation Route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// API Routes
+app.use('/api/auth', authRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {
