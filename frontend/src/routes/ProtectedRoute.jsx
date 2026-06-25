@@ -1,21 +1,22 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ROUTES } from '../constants/routes';
 
 /**
  * Route protection wrapper that redirects to login if the user is not authenticated.
- * Otherwise, renders its child components.
+ * Renders either children (when passed) or <Outlet /> for nested route layouts.
  */
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
 
   if (!token) {
-    // Redirect to login if user is not authenticated
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
-  return children;
+  // If children are provided (e.g. wrapping a layout), render them directly.
+  // The layout itself will render <Outlet /> for nested child routes.
+  return children ?? <Outlet />;
 };
 
 export default ProtectedRoute;

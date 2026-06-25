@@ -26,6 +26,7 @@ const AppRoutes = () => {
       </Route>
 
       {/* Protected Dashboard/Task Routes */}
+      {/* ProtectedRoute wraps a layout that itself renders <Outlet /> */}
       <Route
         element={
           <ProtectedRoute>
