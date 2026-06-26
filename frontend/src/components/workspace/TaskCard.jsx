@@ -10,7 +10,7 @@ import { formatDate } from '../../utils/formatDate';
  * progress bars (for In Progress tasks only), assignee profile pictures,
  * and Framer Motion hover/entry transitions.
  */
-const TaskCard = ({ task }) => {
+const TaskCard = ({ task, onClick }) => {
   const isCompleted = task.status === 'Completed';
 
   // Helper to determine priority badge variants matching color spec
@@ -44,7 +44,8 @@ const TaskCard = ({ task }) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2, scale: 1.01 }}
       transition={{ duration: 0.22, ease: 'easeOut' }}
-      className={`bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-shadow relative select-none ${
+      onClick={() => onClick && onClick(task.id)}
+      className={`bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-shadow relative select-none cursor-pointer ${
         isCompleted ? 'opacity-85' : ''
       }`}
     >

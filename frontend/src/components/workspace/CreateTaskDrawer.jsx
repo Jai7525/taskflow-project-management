@@ -9,11 +9,11 @@ import { toast } from 'react-hot-toast';
  * Implements Framer Motion slide-in from right, inputs disabled during submit,
  * Escape key binding, accessibility focus management, and automatic form resetting.
  */
-const CreateTaskDrawer = ({ isOpen, onClose, onSuccess }) => {
+const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending' }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    status: 'Pending',
+    status: defaultStatus,
     priority: 'Medium',
     dueDate: '',
   });
@@ -37,7 +37,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess }) => {
       setFormData({
         title: '',
         description: '',
-        status: 'Pending',
+        status: defaultStatus,
         priority: 'Medium',
         dueDate: '',
       });
@@ -49,7 +49,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess }) => {
       }, 250); // wait for slide-in animation to complete
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultStatus]);
 
   // Bind Escape key to close drawer (when not submitting)
   useEffect(() => {
@@ -177,7 +177,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess }) => {
             className="fixed inset-y-0 right-0 z-50 w-full sm:w-[85%] md:w-[460px] bg-white border-l border-slate-200 shadow-2xl flex flex-col select-none"
           >
             {/* Header section */}
-            <div className="h-18 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
+            <div className="py-5 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
               <div>
                 <h2 id="drawer-title" className="text-lg font-bold text-slate-900 font-sans">
                   Create New Task

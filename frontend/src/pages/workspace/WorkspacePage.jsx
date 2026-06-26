@@ -17,7 +17,7 @@ import taskService from '../../services/taskService';
  * Coordinates dynamic Task Timeline with dynamic task board columns for Phase 8D.
  */
 const WorkspacePage = () => {
-  const { searchQuery, refreshTrigger } = useOutletContext();
+  const { searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer } = useOutletContext();
   const [debouncedSearch, setDebouncedSearch] = useState('');
   
   // Timeline tasks for calendar indicators (max limit 150)
@@ -120,6 +120,10 @@ const WorkspacePage = () => {
     setCurrentPage(newPage);
   };
 
+  const handleCardClick = (taskId) => {
+    openTaskDetailsDrawer(taskId);
+  };
+
   // Filter tasks client-side based on timeline's selectedDate
   const filteredTasks = selectedDate
     ? boardTasks.filter((task) => task.dueDate && task.dueDate.startsWith(selectedDate))
@@ -153,7 +157,7 @@ const WorkspacePage = () => {
     return (
       <div className="space-y-3">
         {columnTasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
+          <TaskCard key={task.id} task={task} onClick={handleCardClick} />
         ))}
       </div>
     );
@@ -230,20 +234,19 @@ const WorkspacePage = () => {
                       </span>
                     </div>
                     <div className="flex space-x-1 text-slate-400">
-                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><Plus className="h-3.5 w-3.5" /></button>
+                      <button
+                        onClick={() => openCreateTaskDrawer('Pending')}
+                        title="Add Pending Task"
+                        className="p-0.5 hover:text-slate-700 cursor-pointer transition-colors duration-150"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
                       <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     {renderColumnContent(pendingTasks, 'No pending tasks')}
-                    
-                    {!loading && (
-                      <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-not-allowed">
-                        <Plus className="h-3.5 w-3.5 mr-1" />
-                        <span>Add Task</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -258,20 +261,19 @@ const WorkspacePage = () => {
                       </span>
                     </div>
                     <div className="flex space-x-1 text-slate-400">
-                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><Plus className="h-3.5 w-3.5" /></button>
+                      <button
+                        onClick={() => openCreateTaskDrawer('In Progress')}
+                        title="Add In Progress Task"
+                        className="p-0.5 hover:text-slate-700 cursor-pointer transition-colors duration-150"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
                       <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     {renderColumnContent(inProgressTasks, 'No tasks in progress')}
-                    
-                    {!loading && (
-                      <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-not-allowed">
-                        <Plus className="h-3.5 w-3.5 mr-1" />
-                        <span>Add Task</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -286,20 +288,19 @@ const WorkspacePage = () => {
                       </span>
                     </div>
                     <div className="flex space-x-1 text-slate-400">
-                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><Plus className="h-3.5 w-3.5" /></button>
+                      <button
+                        onClick={() => openCreateTaskDrawer('Completed')}
+                        title="Add Completed Task"
+                        className="p-0.5 hover:text-slate-700 cursor-pointer transition-colors duration-150"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
                       <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     {renderColumnContent(completedTasks, 'No completed tasks')}
-                    
-                    {!loading && (
-                      <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-not-allowed">
-                        <Plus className="h-3.5 w-3.5 mr-1" />
-                        <span>Add Task</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -380,7 +381,6 @@ const WorkspacePage = () => {
         </div>
 
       </div>
-
     </div>
   );
 };
