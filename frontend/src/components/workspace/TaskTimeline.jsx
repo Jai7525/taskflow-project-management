@@ -134,7 +134,7 @@ const TaskTimeline = ({
         </motion.button>
 
         {/* Responsive viewport layout: Desktop shows 7, Tablet shows 5 (via tailwind hidden/block), Mobile swiping */}
-        <div className="flex-1 flex justify-between items-stretch px-2 overflow-x-auto scrollbar-none space-x-2 md:space-x-3 lg:space-x-4">
+        <div className="flex-1 flex justify-between items-stretch px-2 pt-2.5 pb-1 overflow-x-auto scrollbar-none space-x-2 md:space-x-3 lg:space-x-4">
           {timelineDays.map((day, idx) => {
             const isSelected = selectedDate === day.dateStr;
             
@@ -149,19 +149,40 @@ const TaskTimeline = ({
             // Hide last 2 items on tablet (idx >= 5) to show exactly 5 days
             const responsivenessClass = idx >= 5 ? 'hidden lg:flex' : 'flex';
 
+            // Styles based on state:
+            // 1. Today + Selected: isToday && isSelected
+            // 2. Today (Not Selected): isToday && !isSelected
+            // 3. Selected (Not Today): !isToday && isSelected
+            // 4. Normal: !isToday && !isSelected
+            let cardBgClass = '';
+            let dayNameColorClass = 'text-slate-450';
+            let dayNumColorClass = 'text-slate-800';
+            let countColorClass = 'text-slate-450';
+
+            if (isSelected) {
+              cardBgClass = 'bg-[#111827] text-white border-[#111827] shadow-md z-10';
+              dayNameColorClass = 'text-slate-400';
+              dayNumColorClass = 'text-white';
+              countColorClass = 'text-slate-350';
+            } else if (day.isToday) {
+              cardBgClass = 'bg-white border-[#6366F1] ring-2 ring-[#6366F1]/10 z-10';
+              dayNameColorClass = 'text-slate-450';
+              dayNumColorClass = 'text-slate-800';
+              countColorClass = 'text-slate-450';
+            } else {
+              cardBgClass = 'bg-white border-[#E5E7EB] hover:border-slate-350';
+              dayNameColorClass = 'text-slate-450';
+              dayNumColorClass = 'text-slate-800';
+              countColorClass = 'text-slate-450';
+            }
+
             return (
               <motion.button
                 whileHover={{ y: -2, scale: 1.01 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 key={day.dateStr}
                 onClick={() => onSelectDate(isSelected ? null : day.dateStr)}
-                className={`${responsivenessClass} flex-1 min-w-[95px] sm:min-w-[110px] md:min-w-[125px] flex-col items-center justify-center p-3.5 rounded-[16px] border text-center transition-all cursor-pointer relative ${
-                  day.isToday
-                    ? 'bg-[#111827] text-white border-[#111827] shadow-md z-10'
-                    : isSelected
-                    ? 'border-[#6366F1] bg-[#eef2ff]/30 ring-2 ring-[#6366F1]/10'
-                    : 'bg-white border-[#E5E7EB] hover:border-slate-350'
-                }`}
+                className={`${responsivenessClass} flex-1 min-w-[95px] sm:min-w-[110px] md:min-w-[125px] flex-col items-center justify-center p-3.5 rounded-[16px] border text-center transition-all cursor-pointer relative ${cardBgClass}`}
               >
                 {/* TODAY badge */}
                 {day.isToday && (
@@ -171,16 +192,12 @@ const TaskTimeline = ({
                 )}
 
                 {/* Day Name */}
-                <span className={`text-[12px] font-semibold ${
-                  day.isToday ? 'text-slate-400' : 'text-slate-450'
-                }`}>
+                <span className={`text-[12px] font-semibold ${dayNameColorClass}`}>
                   {day.dayName}
                 </span>
 
                 {/* Day Number + Month */}
-                <span className={`text-[16px] sm:text-[18px] font-extrabold mt-0.5 leading-none ${
-                  day.isToday ? 'text-white' : 'text-slate-800'
-                }`}>
+                <span className={`text-[16px] sm:text-[18px] font-extrabold mt-0.5 leading-none ${dayNumColorClass}`}>
                   {day.dayNum} {day.monthName}
                 </span>
 
@@ -193,9 +210,7 @@ const TaskTimeline = ({
                 </div>
 
                 {/* Task Count descriptor */}
-                <span className={`text-[10px] font-bold mt-2 ${
-                  day.isToday ? 'text-slate-350' : 'text-slate-450'
-                }`}>
+                <span className={`text-[10px] font-bold mt-2 ${countColorClass}`}>
                   {count === 0 ? '0 Tasks' : `${count} ${count === 1 ? 'Task' : 'Tasks'}`}
                 </span>
               </motion.button>

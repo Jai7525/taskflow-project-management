@@ -11,6 +11,8 @@ import TaskCard from '../../components/workspace/TaskCard';
 import Dropdown from '../../components/ui/Dropdown';
 import SkeletonLoader from '../../components/ui/SkeletonLoader';
 import taskService from '../../services/taskService';
+import RecentActivity from '../../components/workspace/RecentActivity';
+import { toast } from 'react-hot-toast';
 
 /**
  * Enterprise Workspace Page.
@@ -25,7 +27,13 @@ const WorkspacePage = () => {
   
   // Board tasks (paginated and status filtered)
   const [boardTasks, setBoardTasks] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
   
   // Filter & Sort States
   const [activeStatus, setActiveStatus] = useState('');
@@ -37,6 +45,11 @@ const WorkspacePage = () => {
   const [loading, setLoading] = useState(true);
   const [timelineLoading, setTimelineLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Activity Log States (Phase 8H)
+  const [activities, setActivities] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState(null);
 
   const sortOptions = [
     { label: 'Newest First', value: 'latest' },
@@ -98,6 +111,24 @@ const WorkspacePage = () => {
     }
   }, []);
 
+  // Fetch Recent Activity Logs (Phase 8H)
+  const fetchRecentActivity = useCallback(async () => {
+    setActivityLoading(true);
+    setActivityError(null);
+    try {
+      const response = await taskService.getRecentActivity();
+      if (response?.success) {
+        setActivities(response.data || []);
+      } else {
+        setActivityError('Unable to load activity');
+      }
+    } catch (err) {
+      setActivityError('Unable to load activity');
+    } finally {
+      setActivityLoading(false);
+    }
+  }, []);
+
   // Trigger timeline refresh when search filters update
   useEffect(() => {
     fetchTimelineTasks(debouncedSearch);
@@ -107,6 +138,11 @@ const WorkspacePage = () => {
   useEffect(() => {
     fetchBoardTasks(currentPage, activeStatus, debouncedSearch, sortOrder);
   }, [currentPage, activeStatus, debouncedSearch, sortOrder, refreshTrigger, fetchBoardTasks]);
+
+  // Trigger activity logs refresh on actions (Phase 8H)
+  useEffect(() => {
+    fetchRecentActivity();
+  }, [refreshTrigger, fetchRecentActivity]);
 
   const handleStatusChange = (status) => {
     setActiveStatus(status);
@@ -122,6 +158,18 @@ const WorkspacePage = () => {
 
   const handleCardClick = (taskId) => {
     openTaskDetailsDrawer(taskId);
+  };
+
+  const handleActivityClick = (activity) => {
+    if (activity.task && activity.taskId) {
+      openTaskDetailsDrawer(activity.taskId);
+    } else {
+      toast.error('This task is no longer available.', {
+        id: 'task-not-available',
+        position: 'top-right',
+        duration: 3000
+      });
+    }
   };
 
   // Filter tasks client-side based on timeline's selectedDate
@@ -181,11 +229,11 @@ const WorkspacePage = () => {
         onRetry={() => fetchTimelineTasks(debouncedSearch)}
       />
 
-      {/* ── Split Grid: Task Columns (3/4 span) and Activity Log (1/4 span) ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 w-full items-start">
+      {/* ── Task Board and Activity Log Stack ── */}
+      <div className="space-y-8 w-full">
         
-        {/* Left Side: Tasks Columns (Pending, In Progress, Completed) */}
-        <div className="xl:col-span-3 space-y-6">
+        {/* Tasks Columns */}
+        <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-[22px] font-bold text-[#111827] tracking-tight font-sans">
               My Tasks
@@ -246,7 +294,7 @@ const WorkspacePage = () => {
                   </div>
 
                   <div className="space-y-3">
-                    {renderColumnContent(pendingTasks, 'No pending tasks')}
+                     {renderColumnContent(pendingTasks, 'No pending tasks')}
                   </div>
                 </div>
 
@@ -317,67 +365,21 @@ const WorkspacePage = () => {
           )}
         </div>
 
-        {/* Right Side: Activity Log Column (1/4 span) */}
-        <div className="xl:col-span-1 bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-5">
-          <div className="flex items-center justify-between">
+        {/* Activity Log (moved below task board) */}
+        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] h-[370px] flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between mb-4 shrink-0">
             <h3 className="text-[16px] font-bold text-[#111827] font-sans">
               Activity Log
             </h3>
-            <button className="text-xs text-[#6366F1] font-bold hover:underline cursor-not-allowed">
-              View all
-            </button>
           </div>
 
-          {/* Vertical log elements */}
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3 text-xs leading-relaxed">
-              <div className="h-6 w-6 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-                +
-              </div>
-              <div>
-                <p className="text-slate-700">
-                  <span className="font-bold text-[#111827]">You</span> created "API Integration"
-                </p>
-                <span className="text-[10px] text-slate-400 block mt-0.5">5m ago</span>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 text-xs leading-relaxed">
-              <div className="h-6 w-6 rounded-full bg-amber-50 text-[#D97706] border border-amber-100 flex items-center justify-center shrink-0">
-                ✎
-              </div>
-              <div>
-                <p className="text-slate-700">
-                  <span className="font-bold text-[#111827]">Kiara</span> updated "Workspace UI"
-                </p>
-                <span className="text-[10px] text-slate-400 block mt-0.5">15m ago</span>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 text-xs leading-relaxed">
-              <div className="h-6 w-6 rounded-full bg-green-50 text-green-600 border border-green-100 flex items-center justify-center shrink-0">
-                ✓
-              </div>
-              <div>
-                <p className="text-slate-700">
-                  <span className="font-bold text-[#111827]">Joe</span> completed "Setup project repo"
-                </p>
-                <span className="text-[10px] text-slate-400 block mt-0.5">1h ago</span>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 text-xs leading-relaxed">
-              <div className="h-6 w-6 rounded-full bg-red-50 text-red-650 border border-red-100 flex items-center justify-center shrink-0">
-                ×
-              </div>
-              <div>
-                <p className="text-slate-700">
-                  <span className="font-bold text-[#111827]">Tania</span> deleted "Old landing page"
-                </p>
-                <span className="text-[10px] text-slate-400 block mt-0.5">2h ago</span>
-              </div>
-            </div>
-          </div>
+          <RecentActivity
+            activities={activities}
+            isLoading={activityLoading}
+            error={activityError}
+            onRetry={fetchRecentActivity}
+            onActivityClick={handleActivityClick}
+          />
         </div>
 
       </div>
