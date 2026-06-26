@@ -8,64 +8,51 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f5f7ff',
-          100: '#ebf0fe',
-          200: '#dae3fc',
-          300: '#beccfb',
-          400: '#99abf7',
-          500: '#637bf1', // Main brand color
-          600: '#5061e8',
-          700: '#404cd3',
-          800: '#3842ad',
-          900: '#313a8a',
-          950: '#1d2153',
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366f1', // Locked Indigo Accent
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
         },
-        slate: {
-          950: '#0f172a',
+        workspace: {
+          bg: '#F6F8FB',
+          sidebar: '#111827',
         },
-        // Premium customized palette
         success: {
-          50: '#ecfdf5',
-          500: '#10b981',
-          600: '#059669',
+          50: '#f0fdf4',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
         },
         warning: {
           50: '#fffbeb',
           500: '#f59e0b',
           600: '#d97706',
+          700: '#b45309',
         },
         danger: {
           50: '#fef2f2',
           500: '#ef4444',
           600: '#dc2626',
+          700: '#b91c1c',
         },
       },
       fontFamily: {
-        sans: ['Outfit', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-      },
-      spacing: {
-        '18': '4.5rem',
-        '72': '18rem',
-        '84': '21rem',
-        '96': '24rem',
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       borderRadius: {
-        'none': '0',
-        'sm': '0.125rem',
-        DEFAULT: '0.25rem',
-        'md': '0.375rem',
-        'lg': '0.5rem',
-        'xl': '0.75rem',
-        '2xl': '1rem',
-        '3xl': '1.5rem',
-        'full': '9999px',
+        'xl': '12px',   // Buttons, inputs, dropdowns
+        '2xl': '16px',  // Cards
       },
       boxShadow: {
-        'soft-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'soft-md': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-        'soft-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
-        'soft-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.03)',
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+        'soft-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.02)',
+        'soft-md': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)',
+        'soft-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.02), 0 4px 6px -2px rgba(0, 0, 0, 0.01)',
       },
     },
   },
