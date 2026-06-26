@@ -1,76 +1,82 @@
 import React from 'react';
-import { LayoutDashboard, History, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, History, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 /**
- * Sidebar component complying with Phase 8A guidelines.
- * Fixed desktop navigation wrapper, background color #111827, active highlight #6366F1.
+ * Premium Sidebar refined to match the locked visual mockup.
+ * Background `#111827`, active nav `#6366F1`, profile/logout pinned to bottom.
  */
 const Sidebar = () => {
-  const navItems = [
-    { id: 'workspace', name: 'Workspace', icon: LayoutDashboard, active: true },
-    { id: 'activity', name: 'Activity Log', icon: History, active: false },
-  ];
-
   return (
-    <aside className="w-[240px] bg-[#111827] text-[#6B7280] flex flex-col h-screen select-none border-r border-[#1F2937] shrink-0">
+    <aside className="w-[240px] bg-[#111827] flex flex-col h-screen select-none border-r border-[#1F2937] shrink-0 p-4">
       {/* Brand Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-[#1F2937]">
-        <div className="flex items-center space-x-2.5">
-          <div className="h-7 w-7 bg-[#6366F1] rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_4px_rgba(99,102,241,0.2)]">
+      <div className="h-16 flex items-center px-4 mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="h-8 w-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
             ⚡
           </div>
-          <span className="text-base font-extrabold tracking-tight text-white font-sans">
-            TaskFlow
-          </span>
+          <div>
+            <span className="text-base font-extrabold tracking-tight text-white font-sans block">
+              TaskFlow
+            </span>
+            <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">
+              Your Workspace
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1.5">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <motion.button
-              whileHover={{ scale: 1.01, x: 2 }}
-              key={item.id}
-              disabled
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-[12px] text-sm font-semibold transition-all text-left cursor-not-allowed ${
-                item.active
-                  ? 'bg-[#6366F1] text-white shadow-[0_1px_2px_rgba(99,102,241,0.15)]'
-                  : 'text-[#9CA3AF] hover:bg-[#1F2937] hover:text-white'
-              }`}
-            >
-              <Icon className="h-4.5 w-4.5" />
-              <span>{item.name}</span>
-            </motion.button>
-          );
-        })}
+      {/* Navigation Options */}
+      <nav className="flex-1 space-y-1">
+        {/* Workspace Link */}
+        <motion.button
+          whileHover={{ scale: 1.01, x: 2 }}
+          className="w-full flex items-center space-x-3 px-4 py-3 bg-[#6366F1] text-white rounded-[12px] text-sm font-semibold transition cursor-pointer"
+        >
+          <LayoutDashboard className="h-4.5 w-4.5" />
+          <span>Workspace</span>
+        </motion.button>
+
+        {/* Activity Log Link */}
+        <motion.button
+          whileHover={{ scale: 1.01, x: 2 }}
+          className="w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:bg-[#1F2937] hover:text-white rounded-[12px] text-sm font-semibold transition cursor-pointer"
+        >
+          <History className="h-4.5 w-4.5" />
+          <span>Activity Log</span>
+        </motion.button>
       </nav>
 
-      {/* Profile and Logout info footer */}
-      <div className="p-4 border-t border-[#1F2937] space-y-4">
-        <div className="flex items-center space-x-3 px-2">
-          <div className="h-9 w-9 rounded-full bg-[#1F2937] border border-[#374151] flex items-center justify-center text-[#D1D5DB]">
-            <User className="h-4 w-4" />
+      {/* Footer Profile & Logout (Pinned to bottom) */}
+      <div className="border-t border-[#1F2937] pt-4 space-y-3">
+        {/* User Card */}
+        <div className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-[#1F2937] transition cursor-pointer">
+          <div className="flex items-center space-x-3">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+              alt="User"
+              className="h-9 w-9 rounded-full object-cover border border-[#374151]"
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">
+                Jayakumar M
+              </p>
+              <p className="text-[10px] text-slate-500 truncate font-medium">
+                jayakumar@email.com
+              </p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-[#F3F4F6] truncate">
-              TaskFlow User
-            </p>
-            <p className="text-[10px] text-[#4B5563] truncate">
-              user@example.com
-            </p>
-          </div>
+          <span className="text-slate-500 text-[10px]">▼</span>
         </div>
 
-        <button
-          disabled
-          className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#1F2937] hover:bg-red-950/40 hover:text-red-400 text-[#9CA3AF] rounded-[12px] text-xs font-semibold transition cursor-not-allowed"
+        {/* Logout Button */}
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          className="w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-950/20 rounded-[12px] text-xs font-bold transition cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
           <span>Logout</span>
-        </button>
+        </motion.button>
       </div>
     </aside>
   );

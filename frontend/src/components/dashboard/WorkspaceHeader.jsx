@@ -1,16 +1,16 @@
 import React from 'react';
 
 /**
- * WorkspaceHeader component showing locked welcome messages.
- * Uses strict typography scale (H1: 32px, Subtitle: 16px/13px spacing rules).
+ * Workspace header welcome block.
+ * Large bold welcome greeting at 48px to 52px.
  */
 const WorkspaceHeader = () => {
   return (
-    <div className="space-y-2">
-      <h1 className="text-[32px] font-extrabold text-[#111827] tracking-tight leading-tight font-sans">
-        Good morning, Jayakumar 👋
+    <div className="space-y-1.5 py-4">
+      <h1 className="text-[40px] md:text-[48px] font-extrabold text-[#111827] tracking-tight leading-none font-sans">
+        Good morning, Jayakumar! 👋
       </h1>
-      <p className="text-[16px] font-medium text-[#6B7280]">
+      <p className="text-[16px] text-slate-500 font-medium leading-relaxed">
         Here's what's happening with your work today.
       </p>
     </div>
