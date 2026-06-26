@@ -9,8 +9,8 @@ export const API_ENDPOINTS = {
     DETAIL: (id) => `/tasks/${id}`,
     COMPLETE: (id) => `/tasks/${id}/complete`,
   },
-  DASHBOARD: {
-    STATISTICS: '/dashboard/statistics',
-    ACTIVITY: '/dashboard/activity',
+  WORKSPACE: {
+    STATISTICS: '/workspace/statistics',
+    ACTIVITY: '/workspace/activity',
   },
 };

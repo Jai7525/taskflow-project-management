@@ -7,7 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
+const workspaceRoutes = require('./routes/workspaceRoutes');
 
 const app = express();
 
@@ -62,7 +62,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/workspace', workspaceRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {

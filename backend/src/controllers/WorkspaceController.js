@@ -1,17 +1,17 @@
-const dashboardService = require('../services/DashboardService');
+const workspaceService = require('../services/WorkspaceService');
 
-class DashboardController {
+class WorkspaceController {
   /**
    * Return task count statistics for the logged-in user
    */
   async getStatistics(req, res, next) {
     try {
       const userId = req.user.id;
-      const statistics = await dashboardService.getStatistics(userId);
+      const statistics = await workspaceService.getStatistics(userId);
 
       res.status(200).json({
         success: true,
-        message: 'Dashboard statistics retrieved successfully',
+        message: 'Workspace statistics retrieved successfully',
         data: statistics
       });
     } catch (error) {
@@ -25,7 +25,7 @@ class DashboardController {
   async getRecentActivity(req, res, next) {
     try {
       const userId = req.user.id;
-      const activity = await dashboardService.getRecentActivity(userId);
+      const activity = await workspaceService.getRecentActivity(userId);
 
       res.status(200).json({
         success: true,
@@ -38,4 +38,4 @@ class DashboardController {
   }
 }
 
-module.exports = new DashboardController();
+module.exports = new WorkspaceController();

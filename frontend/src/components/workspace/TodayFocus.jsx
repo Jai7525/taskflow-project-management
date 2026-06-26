@@ -8,7 +8,7 @@ import StatisticSkeleton from './StatisticSkeleton';
  * TodayFocus section containing 4 statistics cards.
  * Manages loading skeletons, error state boundaries, and retry functionality.
  */
-const TodayFocus = () => {
+const TodayFocus = ({ refreshTrigger }) => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +32,7 @@ const TodayFocus = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+  }, [fetchStats, refreshTrigger]);
 
   if (loading) {
     return (

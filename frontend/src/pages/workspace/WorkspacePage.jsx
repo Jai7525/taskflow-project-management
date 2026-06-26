@@ -2,22 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Calendar, MoreHorizontal, AlertCircle } from 'lucide-react';
-import WorkspaceHeader from '../../components/dashboard/WorkspaceHeader';
-import TodayFocus from '../../components/dashboard/TodayFocus';
-import TaskTimeline from '../../components/dashboard/TaskTimeline';
-import FilterTabs from '../../components/dashboard/FilterTabs';
-import Pagination from '../../components/dashboard/Pagination';
-import TaskCard from '../../components/dashboard/TaskCard';
+import WorkspaceHeader from '../../components/workspace/WorkspaceHeader';
+import TodayFocus from '../../components/workspace/TodayFocus';
+import TaskTimeline from '../../components/workspace/TaskTimeline';
+import FilterTabs from '../../components/workspace/FilterTabs';
+import Pagination from '../../components/workspace/Pagination';
+import TaskCard from '../../components/workspace/TaskCard';
 import Dropdown from '../../components/ui/Dropdown';
 import SkeletonLoader from '../../components/ui/SkeletonLoader';
 import taskService from '../../services/taskService';
 
 /**
- * Enterprise Workspace Dashboard Page.
+ * Enterprise Workspace Page.
  * Coordinates dynamic Task Timeline with dynamic task board columns for Phase 8D.
  */
-const DashboardPage = () => {
-  const { searchQuery } = useOutletContext();
+const WorkspacePage = () => {
+  const { searchQuery, refreshTrigger } = useOutletContext();
   const [debouncedSearch, setDebouncedSearch] = useState('');
   
   // Timeline tasks for calendar indicators (max limit 150)
@@ -101,12 +101,12 @@ const DashboardPage = () => {
   // Trigger timeline refresh when search filters update
   useEffect(() => {
     fetchTimelineTasks(debouncedSearch);
-  }, [debouncedSearch, fetchTimelineTasks]);
+  }, [debouncedSearch, refreshTrigger, fetchTimelineTasks]);
 
   // Trigger board refresh when pagination or layout changes
   useEffect(() => {
     fetchBoardTasks(currentPage, activeStatus, debouncedSearch, sortOrder);
-  }, [currentPage, activeStatus, debouncedSearch, sortOrder, fetchBoardTasks]);
+  }, [currentPage, activeStatus, debouncedSearch, sortOrder, refreshTrigger, fetchBoardTasks]);
 
   const handleStatusChange = (status) => {
     setActiveStatus(status);
@@ -166,7 +166,7 @@ const DashboardPage = () => {
       <WorkspaceHeader />
 
       {/* ── Today's Focus row metrics ── */}
-      <TodayFocus />
+      <TodayFocus refreshTrigger={refreshTrigger} />
 
       {/* ── Signature Task Timeline (Dynamic horizontal dates rail) ── */}
       <TaskTimeline
@@ -347,7 +347,7 @@ const DashboardPage = () => {
               </div>
               <div>
                 <p className="text-slate-700">
-                  <span className="font-bold text-[#111827]">Kiara</span> updated "Dashboard UI"
+                  <span className="font-bold text-[#111827]">Kiara</span> updated "Workspace UI"
                 </p>
                 <span className="text-[10px] text-slate-400 block mt-0.5">15m ago</span>
               </div>
@@ -385,4 +385,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default WorkspacePage;

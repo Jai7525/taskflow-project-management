@@ -1,30 +1,30 @@
 const express = require('express');
-const dashboardController = require('../controllers/DashboardController');
+const workspaceController = require('../controllers/WorkspaceController');
 const authenticateJWT = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// All dashboard routes require authentication
+// All workspace routes require authentication
 router.use(authenticateJWT);
 
 /**
  * @swagger
  * tags:
- *   name: Dashboard
- *   description: Dashboard statistics and activity endpoints
+ *   name: Workspace
+ *   description: Workspace statistics and activity endpoints
  */
 
 /**
  * @swagger
- * /api/dashboard/statistics:
+ * /api/workspace/statistics:
  *   get:
  *     summary: Get task statistics for the logged-in user
- *     tags: [Dashboard]
+ *     tags: [Workspace]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Dashboard statistics retrieved successfully
+ *         description: Workspace statistics retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -35,7 +35,7 @@ router.use(authenticateJWT);
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Dashboard statistics retrieved successfully
+ *                   example: Workspace statistics retrieved successfully
  *                 data:
  *                   type: object
  *                   properties:
@@ -54,14 +54,14 @@ router.use(authenticateJWT);
  *       401:
  *         description: Unauthorized — token missing, invalid, or expired
  */
-router.get('/statistics', dashboardController.getStatistics);
+router.get('/statistics', workspaceController.getStatistics);
 
 /**
  * @swagger
- * /api/dashboard/activity:
+ * /api/workspace/activity:
  *   get:
  *     summary: Get the 10 most recent activity logs for the logged-in user
- *     tags: [Dashboard]
+ *     tags: [Workspace]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -114,6 +114,6 @@ router.get('/statistics', dashboardController.getStatistics);
  *       401:
  *         description: Unauthorized — token missing, invalid, or expired
  */
-router.get('/activity', dashboardController.getRecentActivity);
+router.get('/activity', workspaceController.getRecentActivity);
 
 module.exports = router;

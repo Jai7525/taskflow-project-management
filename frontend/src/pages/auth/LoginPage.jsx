@@ -33,7 +33,7 @@ const LoginPage = () => {
         // Save to token storage and AuthContext
         login(response.data.token, response.data.user);
         toast.success(response.message || 'Login successful');
-        navigate(ROUTES.DASHBOARD);
+        navigate(ROUTES.WORKSPACE);
       } else {
         toast.error('Login failed. Please try again.');
       }

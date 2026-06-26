@@ -1,7 +1,7 @@
 export const ROUTES = {
   LOGIN: '/',
   REGISTER: '/register',
-  DASHBOARD: '/workspace',
+  WORKSPACE: '/workspace',
   ADD_TASK: '/tasks/new',
   TASK_DETAILS: '/tasks/:id',
 };

@@ -1,7 +1,7 @@
 const { Op, fn, col, literal } = require('sequelize');
 const { Task, ActivityLog, User } = require('../models');
 
-class DashboardService {
+class WorkspaceService {
   /**
    * Return aggregate task statistics for the logged-in user:
    * total tasks, and breakdown by each status value.
@@ -47,4 +47,4 @@ class DashboardService {
   }
 }
 
-module.exports = new DashboardService();
+module.exports = new WorkspaceService();

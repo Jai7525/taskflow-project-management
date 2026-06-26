@@ -12,7 +12,7 @@ import ProtectedRoute from './ProtectedRoute';
 // Pages
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
-import DashboardPage from '../pages/dashboard/DashboardPage';
+import WorkspacePage from '../pages/workspace/WorkspacePage';
 
 const AppRoutes = () => {
   return (
@@ -31,7 +31,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+        <Route path={ROUTES.WORKSPACE} element={<WorkspacePage />} />
       </Route>
 
       {/* Fallback Catch-all Route */}

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
  * TopNavbar refined matching locked mock.
  * Wider Search inputs, notification badges, dark mode toggle, Avatar bubble.
  */
-const TopNavbar = ({ searchQuery = '', onSearchChange }) => {
+const TopNavbar = ({ searchQuery = '', onSearchChange, onCreateTaskClick }) => {
   return (
     <header className="sticky top-0 z-35 h-16 bg-white border-b border-[#E5E7EB] flex items-center justify-between px-8 select-none">
       
@@ -57,6 +57,7 @@ const TopNavbar = ({ searchQuery = '', onSearchChange }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           type="button"
+          onClick={onCreateTaskClick}
           className="flex items-center space-x-1.5 px-4 py-2.5 bg-[#6366F1] text-white rounded-[12px] text-sm font-bold shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer"
         >
           <Plus className="h-4.5 w-4.5" />

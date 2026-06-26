@@ -47,11 +47,11 @@ const taskService = {
   },
 
   /**
-   * Retrieves dashboard statistics
+   * Retrieves workspace statistics
    * @returns {Promise<Object>}
    */
   getStatistics: async () => {
-    const response = await API.get(API_ENDPOINTS.DASHBOARD.STATISTICS);
+    const response = await API.get(API_ENDPOINTS.WORKSPACE.STATISTICS);
     return response.data;
   },
 
@@ -60,7 +60,7 @@ const taskService = {
    * @returns {Promise<Object>}
    */
   getRecentActivity: async () => {
-    const response = await API.get(API_ENDPOINTS.DASHBOARD.ACTIVITY);
+    const response = await API.get(API_ENDPOINTS.WORKSPACE.ACTIVITY);
     return response.data;
   },
 

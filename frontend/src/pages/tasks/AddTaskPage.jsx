@@ -6,8 +6,8 @@ const AddTaskPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Link to={ROUTES.DASHBOARD} className="text-slate-600 hover:text-slate-900">
-          &larr; Back to Dashboard
+        <Link to={ROUTES.WORKSPACE} className="text-slate-600 hover:text-slate-900">
+          &larr; Back to Workspace
         </Link>
         <h1 className="text-3xl font-bold text-slate-800">Add Task Page Placeholder</h1>
       </div>
