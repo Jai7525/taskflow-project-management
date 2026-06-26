@@ -4,7 +4,7 @@ import { Calendar, AlertCircle } from 'lucide-react';
 /**
  * Premium Form Edit Mode component for Task Details updates (Phase 8F).
  */
-const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError }) => {
+const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChange }) => {
   const [formData, setFormData] = useState({
     title: task.title || '',
     description: task.description || '',
@@ -29,7 +29,11 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError }) => {
   }, []);
 
   const handleInputChange = (field, val) => {
-    setFormData((prev) => ({ ...prev, [field]: val }));
+    const updated = { ...formData, [field]: val };
+    setFormData(updated);
+    if (onChange) {
+      onChange(updated);
+    }
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
     }

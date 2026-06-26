@@ -254,15 +254,15 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
             Cancel
           </motionDiv.button>
           <motionDiv.button
-            whileHover={{ scale: isSaving ? 1 : 1.02 }}
-            whileTap={{ scale: isSaving ? 1 : 0.98 }}
+            whileHover={{ scale: (isSaving || !isDirty()) ? 1 : 1.02 }}
+            whileTap={{ scale: (isSaving || !isDirty()) ? 1 : 0.98 }}
             type="submit"
             form="edit-task-form"
-            disabled={isSaving}
-            className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer disabled:opacity-75 flex items-center space-x-1.5"
+            disabled={isSaving || !isDirty()}
+            className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5"
           >
             {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            <span>{isSaving ? 'Saving...' : 'Save Task'}</span>
+            <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
           </motionDiv.button>
         </motionDiv>
       );
