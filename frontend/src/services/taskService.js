@@ -16,6 +16,37 @@ const taskService = {
   },
 
   /**
+   * Retrieves a single task's details
+   * @param {string} id - Task UUID
+   * @returns {Promise<Object>}
+   */
+  getTaskById: async (id) => {
+    const response = await API.get(API_ENDPOINTS.TASKS.DETAIL(id));
+    return response.data;
+  },
+
+  /**
+   * Creates a new task
+   * @param {Object} data - { title, description, status, priority, dueDate }
+   * @returns {Promise<Object>}
+   */
+  createTask: async (data) => {
+    const response = await API.post(API_ENDPOINTS.TASKS.BASE, data);
+    return response.data;
+  },
+
+  /**
+   * Updates an existing task
+   * @param {string} id - Task UUID
+   * @param {Object} data - { title, description, status, priority, dueDate }
+   * @returns {Promise<Object>}
+   */
+  updateTask: async (id, data) => {
+    const response = await API.put(API_ENDPOINTS.TASKS.DETAIL(id), data);
+    return response.data;
+  },
+
+  /**
    * Retrieves dashboard statistics
    * @returns {Promise<Object>}
    */

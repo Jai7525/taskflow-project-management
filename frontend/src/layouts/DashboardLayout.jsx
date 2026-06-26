@@ -11,6 +11,7 @@ import Header from '../components/layout/Header';
 const DashboardLayout = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -42,13 +43,20 @@ const DashboardLayout = () => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onMenuClick={toggleSidebar}
+          onCreateTaskClick={() => setIsCreateDrawerOpen(true)}
         />
 
         {/* Page Content */}
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto w-full">
-            {/* Pass search query to all child pages via React Router context */}
-            <Outlet context={{ searchQuery }} />
+            {/* Pass search query and drawer states to all child pages via React Router context */}
+            <Outlet
+              context={{
+                searchQuery,
+                isCreateDrawerOpen,
+                setIsCreateDrawerOpen,
+              }}
+            />
           </div>
         </main>
       </div>
