@@ -1,7 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ClipboardList, Clock, Loader, CheckCircle2, ChevronLeft, ChevronRight, Plus, Calendar, MoreHorizontal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar, MoreHorizontal } from 'lucide-react';
 import WorkspaceHeader from '../../components/dashboard/WorkspaceHeader';
+import PlaceholderCard from '../../components/dashboard/PlaceholderCard';
+import TodayFocus from '../../components/dashboard/TodayFocus';
 
 /**
  * Enterprise Workspace Dashboard Page.
@@ -14,121 +16,9 @@ const DashboardPage = () => {
       {/* ── Page Header Greeting ── */}
       <WorkspaceHeader />
 
-      {/* ── Today's Focus (4 Metrics Cards with Mock Mini SVG Charts) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-        {/* Card 1: Total Tasks */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="h-7 w-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650">
-                <ClipboardList className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-[13px] font-bold text-[#6B7280]">Total Tasks</span>
-            </div>
-            <h2 className="text-3xl font-extrabold text-[#111827] leading-none">124</h2>
-            <span className="text-[11px] text-[#6B7280] font-medium block">vs last 7 days</span>
-          </div>
-          <div className="flex flex-col items-end space-y-3">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F8F0] text-[#10B981]">
-              ▲ 12%
-            </span>
-            {/* Sparkline chart path */}
-            <svg className="w-16 h-8 text-[#10B981]" viewBox="0 0 100 40">
-              <path
-                d="M0,35 Q15,20 30,25 T60,10 T90,5 L100,5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-        </div>
+      {/* ── Today's Focus (Live statistics integration for Phase 8B) ── */}
+      <TodayFocus />
 
-        {/* Card 2: Pending */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="h-7 w-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-[#D97706]">
-                <Clock className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-[13px] font-bold text-[#6B7280]">Pending</span>
-            </div>
-            <h2 className="text-3xl font-extrabold text-[#111827] leading-none">42</h2>
-            <span className="text-[11px] text-[#6B7280] font-medium block">vs last 7 days</span>
-          </div>
-          <div className="flex flex-col items-end space-y-3">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">
-              ▲ 8%
-            </span>
-            <svg className="w-16 h-8 text-[#F59E0B]" viewBox="0 0 100 40">
-              <path
-                d="M0,30 Q20,35 40,20 T80,25 T100,15"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-        </div>
-
-        {/* Card 3: In Progress */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="h-7 w-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-650">
-                <Loader className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-[13px] font-bold text-[#6B7280]">In Progress</span>
-            </div>
-            <h2 className="text-3xl font-extrabold text-[#111827] leading-none">34</h2>
-            <span className="text-[11px] text-[#6B7280] font-medium block">vs last 7 days</span>
-          </div>
-          <div className="flex flex-col items-end space-y-3">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-650">
-              ▲ 5%
-            </span>
-            <svg className="w-16 h-8 text-blue-500" viewBox="0 0 100 40">
-              <path
-                d="M0,25 Q15,30 30,15 T70,35 T100,5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-        </div>
-
-        {/* Card 4: Completed */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="h-7 w-7 rounded-lg bg-green-50 border border-green-100 flex items-center justify-center text-[#16A34A]">
-                <CheckCircle2 className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-[13px] font-bold text-[#6B7280]">Completed</span>
-            </div>
-            <h2 className="text-3xl font-extrabold text-[#111827] leading-none">48</h2>
-            <span className="text-[11px] text-[#6B7280] font-medium block">vs last 7 days</span>
-          </div>
-          <div className="flex flex-col items-end space-y-3">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F8F0] text-[#10B981]">
-              ▲ 16%
-            </span>
-            <svg className="w-16 h-8 text-[#10B981]" viewBox="0 0 100 40">
-              <path
-                d="M0,35 Q20,30 40,15 T80,10 T100,2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
 
       {/* ── Signature Task Timeline (Horizontal Date Rail Placeholder) ── */}
       <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
