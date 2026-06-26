@@ -1,150 +1,106 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { CheckCircle, Trash2, Eye, MoreVertical, Calendar } from 'lucide-react';
-import { statusColor, priorityColor } from '../../utils/colorHelpers';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Calendar } from 'lucide-react';
+import Badge from '../ui/Badge';
 import { formatDate } from '../../utils/formatDate';
-import { truncateText } from '../../utils/truncateText';
-import { TASK_STATUS } from '../../constants/status';
 
 /**
- * Individual task card component conforming to Locked Workspace UI guidelines.
- * Pure white card, very subtle shadow, 16px border-radius, soft borders.
- * Uses event propagation stops to avoid bubbling to details view trigger.
+ * Premium Task Card component conforming to Phase 8D visual guidelines.
+ * Displays: Title, truncated description, due date, status/priority badges,
+ * progress bars (for In Progress tasks only), assignee profile pictures,
+ * and Framer Motion hover/entry transitions.
  */
-const TaskCard = ({ task, onComplete, onDelete }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+const TaskCard = ({ task }) => {
+  const isCompleted = task.status === 'Completed';
 
-  const isCompleted = task.status === TASK_STATUS.COMPLETED;
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
-
-  const handleCheckboxClick = (e) => {
-    e.stopPropagation();
-    if (!isCompleted) {
-      onComplete(task.id);
+  // Helper to determine priority badge variants matching color spec
+  const getPriorityVariant = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+        return 'danger';
+      case 'medium':
+        return 'medium';
+      case 'low':
+      default:
+        return 'low';
     }
   };
 
-  const handleDeleteClick = (e) => {
-    e.stopPropagation();
-    onDelete(task);
-  };
-
-  const handleMenuToggle = (e) => {
-    e.stopPropagation();
-    setMenuOpen((prev) => !prev);
+  const getStatusVariant = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'completed';
+      case 'in progress':
+        return 'progress';
+      case 'pending':
+      default:
+        return 'pending';
+    }
   };
 
   return (
-    <div className={`bg-white border rounded-2xl px-5 py-4 shadow-soft-sm hover:shadow-soft-md transition-all duration-200 group border-slate-200 ${
-      isCompleted ? 'opacity-70' : ''
-    }`}>
-      <div className="flex items-start justify-between gap-4">
-        {/* Left: Checkbox + Content */}
-        <div className="flex items-start space-x-3.5 min-w-0 flex-1">
-          {/* Completion Checkbox */}
-          <button
-            onClick={handleCheckboxClick}
-            disabled={isCompleted}
-            className={`mt-0.5 h-5 w-5 rounded-full border flex-shrink-0 flex items-center justify-center transition focus:outline-none ${
-              isCompleted
-                ? 'border-green-500 bg-green-500 text-white cursor-default'
-                : 'border-slate-300 hover:border-indigo-500 cursor-pointer'
-            }`}
-            title={isCompleted ? 'Task Completed' : 'Mark as Complete'}
-          >
-            {isCompleted && <CheckCircle className="h-3.5 w-3.5" />}
-          </button>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2, scale: 1.01 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
+      className={`bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-shadow relative select-none ${
+        isCompleted ? 'opacity-85' : ''
+      }`}
+    >
+      {/* Priority badge */}
+      {task.priority && (
+        <Badge variant={getPriorityVariant(task.priority)}>
+          {task.priority}
+        </Badge>
+      )}
 
-          {/* Task Info */}
-          <div className="min-w-0 flex-1 space-y-1">
-            <h3 className={`text-[14px] font-bold text-slate-800 leading-snug font-sans ${
-              isCompleted ? 'line-through text-slate-400' : ''
-            }`}>
-              {task.title}
-            </h3>
-            <p className="text-[12px] text-slate-400 leading-relaxed font-medium">
-              {truncateText(task.description, 80)}
-            </p>
+      {/* Task Title */}
+      <h4 className={`text-[14px] font-bold mt-2.5 text-[#111827] leading-snug font-sans ${
+        isCompleted ? 'line-through text-slate-400' : ''
+      }`}>
+        {task.title}
+      </h4>
 
-            {/* Badges */}
-            <div className="flex flex-wrap items-center gap-2 pt-2.5">
-              {/* Status Badge */}
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase ${statusColor(task.status)}`}>
-                {task.status}
-              </span>
+      {/* Description truncated after 2 lines */}
+      <p className="text-[12px] text-slate-450 mt-1 leading-relaxed line-clamp-2">
+        {task.description}
+      </p>
 
-              {/* Priority Badge */}
-              {task.priority && (
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase ${priorityColor(task.priority)}`}>
-                  {task.priority}
-                </span>
-              )}
-
-              {/* Due Date */}
-              {task.dueDate && (
-                <span className="inline-flex items-center space-x-1 text-[11px] text-slate-400 font-semibold">
-                  <Calendar className="h-3 w-3" />
-                  <span>{formatDate(task.dueDate)}</span>
-                </span>
-              )}
-            </div>
+      {/* Progress slider placeholder - only for "In Progress" status */}
+      {task.status === 'In Progress' && (
+        <div className="mt-3.5 space-y-1">
+          <div className="flex justify-between text-[10px] text-slate-500 font-bold">
+            <span>Progress</span>
+            <span>60%</span>
+          </div>
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-[#6366F1] h-full w-[60%]" />
           </div>
         </div>
+      )}
 
-        {/* Right: Actions */}
-        <div className="flex items-center space-x-1 shrink-0">
-          {/* Delete Icon */}
-          <button
-            onClick={handleDeleteClick}
-            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition cursor-pointer"
-            title="Delete Task"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-
-          {/* Three-Dot Menu */}
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={handleMenuToggle}
-              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition cursor-pointer"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
-
-            {menuOpen && (
-              <div className="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-xl shadow-soft-lg z-20 py-1 overflow-hidden">
-                {!isCompleted && (
-                  <button
-                    onClick={(e) => { handleCheckboxClick(e); setMenuOpen(false); }}
-                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center space-x-2 transition cursor-pointer"
-                  >
-                    <CheckCircle className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Complete Task</span>
-                  </button>
-                )}
-                <button
-                  onClick={(e) => { handleDeleteClick(e); setMenuOpen(false); }}
-                  className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center space-x-2 transition cursor-pointer"
-                >
-                  <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                  <span>Delete Task</span>
-                </button>
-              </div>
-            )}
-          </div>
+      {/* Card Footer Info */}
+      <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
+        <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
+          <Calendar className="h-3 w-3" />
+          <span>{task.dueDate ? formatDate(task.dueDate) : 'No date'}</span>
+        </span>
+        
+        <div className="flex items-center space-x-2">
+          {/* Status Badge */}
+          <Badge variant={getStatusVariant(task.status)} className="scale-90 origin-right">
+            {task.status}
+          </Badge>
+          
+          <img
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+            alt="assignee"
+            className="h-6 w-6 rounded-full object-cover border border-white shadow-sm shrink-0"
+          />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,42 +1,163 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Calendar, MoreHorizontal } from 'lucide-react';
+import { Plus, Calendar, MoreHorizontal, AlertCircle } from 'lucide-react';
 import WorkspaceHeader from '../../components/dashboard/WorkspaceHeader';
 import TodayFocus from '../../components/dashboard/TodayFocus';
 import TaskTimeline from '../../components/dashboard/TaskTimeline';
+import FilterTabs from '../../components/dashboard/FilterTabs';
+import Pagination from '../../components/dashboard/Pagination';
+import TaskCard from '../../components/dashboard/TaskCard';
+import Dropdown from '../../components/ui/Dropdown';
+import SkeletonLoader from '../../components/ui/SkeletonLoader';
 import taskService from '../../services/taskService';
 
 /**
  * Enterprise Workspace Dashboard Page.
- * Coordinates dynamic Task Timeline with static board mockups for Phase 8C.
+ * Coordinates dynamic Task Timeline with dynamic task board columns for Phase 8D.
  */
 const DashboardPage = () => {
-  const [tasks, setTasks] = useState([]);
+  const { searchQuery } = useOutletContext();
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  
+  // Timeline tasks for calendar indicators (max limit 150)
+  const [timelineTasks, setTimelineTasks] = useState([]);
+  
+  // Board tasks (paginated and status filtered)
+  const [boardTasks, setBoardTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  
+  // Filter & Sort States
+  const [activeStatus, setActiveStatus] = useState('');
+  const [sortOrder, setSortOrder] = useState('latest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationData, setPaginationData] = useState(null);
+  
+  // Loading & Error States
   const [loading, setLoading] = useState(true);
+  const [timelineLoading, setTimelineLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch all tasks for due-date timeline calculations (max limit 150)
-  const fetchTasksData = useCallback(async () => {
+  const sortOptions = [
+    { label: 'Newest First', value: 'latest' },
+    { label: 'Oldest First', value: 'oldest' },
+  ];
+
+  // Debounce search query (300ms)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery || '');
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Reset page when search, status, or sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, activeStatus, sortOrder]);
+
+  // Fetch all tasks for due-date timeline calculations
+  const fetchTimelineTasks = useCallback(async (searchVal) => {
+    setTimelineLoading(true);
+    try {
+      const response = await taskService.getTasks({ limit: 150, search: searchVal });
+      if (response?.success) {
+        setTimelineTasks(response.data.tasks || []);
+      }
+    } catch (err) {
+      console.error('Failed to load timeline tasks', err);
+    } finally {
+      setTimelineLoading(false);
+    }
+  }, []);
+
+  // Fetch Board Tasks based on filter parameters
+  const fetchBoardTasks = useCallback(async (page, status, search, sort) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await taskService.getTasks({ limit: 150 });
+      const params = {
+        page,
+        limit: 10,
+        sort,
+      };
+      if (status) params.status = status;
+      if (search) params.search = search;
+      
+      const response = await taskService.getTasks(params);
       if (response?.success) {
-        setTasks(response.data.tasks || []);
+        setBoardTasks(response.data.tasks || []);
+        setPaginationData(response.data.pagination || null);
       } else {
-        setError('Unable to load timeline');
+        setError('Unable to load tasks');
       }
     } catch (err) {
-      setError('Unable to load timeline');
+      setError('Unable to load tasks');
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Trigger timeline refresh when search filters update
   useEffect(() => {
-    fetchTasksData();
-  }, [fetchTasksData]);
+    fetchTimelineTasks(debouncedSearch);
+  }, [debouncedSearch, fetchTimelineTasks]);
+
+  // Trigger board refresh when pagination or layout changes
+  useEffect(() => {
+    fetchBoardTasks(currentPage, activeStatus, debouncedSearch, sortOrder);
+  }, [currentPage, activeStatus, debouncedSearch, sortOrder, fetchBoardTasks]);
+
+  const handleStatusChange = (status) => {
+    setActiveStatus(status);
+  };
+
+  const handleSortChange = (sort) => {
+    setSortOrder(sort);
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  // Filter tasks client-side based on timeline's selectedDate
+  const filteredTasks = selectedDate
+    ? boardTasks.filter((task) => task.dueDate && task.dueDate.startsWith(selectedDate))
+    : boardTasks;
+
+  // Group filtered tasks by status
+  const pendingTasks = filteredTasks.filter((t) => t.status === 'Pending');
+  const inProgressTasks = filteredTasks.filter((t) => t.status === 'In Progress');
+  const completedTasks = filteredTasks.filter((t) => t.status === 'Completed');
+
+  // Helper to render skeleton loaders or tasks inside columns
+  const renderColumnContent = (columnTasks, emptyText) => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          <SkeletonLoader variant="card" />
+          <SkeletonLoader variant="card" />
+        </div>
+      );
+    }
+
+    if (columnTasks.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-[#E5E7EB] rounded-[12px] bg-white/50 text-slate-400 space-y-1 text-center">
+          <span className="text-xs font-bold text-slate-500">{emptyText}</span>
+          <span className="text-[10px] text-slate-400">No tasks yet</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {columnTasks.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8 pb-10 w-full overflow-hidden">
@@ -49,11 +170,11 @@ const DashboardPage = () => {
 
       {/* ── Signature Task Timeline (Dynamic horizontal dates rail) ── */}
       <TaskTimeline
-        tasks={tasks}
+        tasks={timelineTasks}
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
-        error={error}
-        onRetry={fetchTasksData}
+        error={error && timelineTasks.length === 0 ? 'Unable to load timeline' : null}
+        onRetry={() => fetchTimelineTasks(debouncedSearch)}
       />
 
       {/* ── Split Grid: Task Columns (3/4 span) and Activity Log (1/4 span) ── */}
@@ -61,263 +182,138 @@ const DashboardPage = () => {
         
         {/* Left Side: Tasks Columns (Pending, In Progress, Completed) */}
         <div className="xl:col-span-3 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-[22px] font-bold text-[#111827] tracking-tight font-sans">
               My Tasks
             </h2>
-            {/* Filters chips */}
-            <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl w-fit">
-              <button className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-brand-600 shadow-soft-sm">
-                All
-              </button>
-              <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700">
-                Pending
-              </button>
-              <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700">
-                In Progress
-              </button>
-              <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700">
-                Completed
-              </button>
-            </div>
-          </div>
-
-          {/* Board 3-Columns Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             
-            {/* Column 1: Pending */}
-            <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center space-x-2">
-                  <span className="h-2 w-2 rounded-full bg-amber-500" />
-                  <span className="font-bold text-sm text-[#111827] font-sans">Pending</span>
-                  <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
-                    6
-                  </span>
-                </div>
-                <div className="flex space-x-1 text-slate-400">
-                  <button className="p-0.5 hover:text-slate-700"><Plus className="h-3.5 w-3.5" /></button>
-                  <button className="p-0.5 hover:text-slate-700"><MoreHorizontal className="h-3.5 w-3.5" /></button>
-                </div>
-              </div>
-
-              {/* Task Cards Stack */}
-              <div className="space-y-3">
-                <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
-                  <span className="inline-block bg-amber-50 text-[#D97706] text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-amber-100">
-                    Medium
-                  </span>
-                  <h4 className="text-[14px] font-bold text-[#111827] mt-2.5">Design login page</h4>
-                  <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
-                    Create a modern and clean login page for the application.
-                  </p>
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                    <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>14 Jun</span>
-                    </span>
-                    <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                      alt="user"
-                      className="h-6 w-6 rounded-full object-cover border border-white shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
-                  <span className="inline-block bg-red-50 text-red-700 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-red-100">
-                    High
-                  </span>
-                  <h4 className="text-[14px] font-bold text-[#111827] mt-2.5">API Integration</h4>
-                  <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
-                    Integrate backend APIs for task management and authentication.
-                  </p>
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                    <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>16 Jun</span>
-                    </span>
-                    <img
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                      alt="user"
-                      className="h-6 w-6 rounded-full object-cover border border-white shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-pointer">
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  <span>Add Task</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Column 2: In Progress */}
-            <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center space-x-2">
-                  <span className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="font-bold text-sm text-[#111827] font-sans">In Progress</span>
-                  <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
-                    8
-                  </span>
-                </div>
-                <div className="flex space-x-1 text-slate-400">
-                  <button className="p-0.5 hover:text-slate-700"><Plus className="h-3.5 w-3.5" /></button>
-                  <button className="p-0.5 hover:text-slate-700"><MoreHorizontal className="h-3.5 w-3.5" /></button>
-                </div>
-              </div>
-
-              {/* Task Cards Stack */}
-              <div className="space-y-3">
-                <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
-                  <span className="inline-block bg-red-50 text-red-700 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-red-100">
-                    High
-                  </span>
-                  <h4 className="text-[14px] font-bold text-[#111827] mt-2.5">Dashboard UI</h4>
-                  <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
-                    Build the main dashboard interface with all components.
-                  </p>
-                  <div className="mt-3.5 space-y-1">
-                    <div className="flex justify-between text-[10px] text-slate-500 font-bold">
-                      <span>Progress</span>
-                      <span>60%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-[#6366F1] h-full w-[60%]" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                    <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>13 Jun</span>
-                    </span>
-                    <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                      alt="user"
-                      className="h-6 w-6 rounded-full object-cover border border-white shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
-                  <span className="inline-block bg-amber-50 text-[#D97706] text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-amber-100">
-                    Medium
-                  </span>
-                  <h4 className="text-[14px] font-bold text-[#111827] mt-2.5">User authentication</h4>
-                  <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
-                    Implement JWT authentication system and protected routes.
-                  </p>
-                  <div className="mt-3.5 space-y-1">
-                    <div className="flex justify-between text-[10px] text-slate-500 font-bold">
-                      <span>Progress</span>
-                      <span>40%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-[#6366F1] h-full w-[40%]" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                    <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>15 Jun</span>
-                    </span>
-                    <img
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
-                      alt="user"
-                      className="h-6 w-6 rounded-full object-cover border border-white shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-455 hover:text-slate-700 bg-white transition cursor-pointer">
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  <span>Add Task</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Column 3: Completed */}
-            <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center space-x-2">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="font-bold text-sm text-[#111827] font-sans">Completed</span>
-                  <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
-                    10
-                  </span>
-                </div>
-                <div className="flex space-x-1 text-slate-400">
-                  <button className="p-0.5 hover:text-slate-700"><Plus className="h-3.5 w-3.5" /></button>
-                  <button className="p-0.5 hover:text-slate-700"><MoreHorizontal className="h-3.5 w-3.5" /></button>
-                </div>
-              </div>
-
-              {/* Task Cards Stack */}
-              <div className="space-y-3">
-                <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm opacity-80 relative">
-                  <span className="inline-block bg-slate-50 text-slate-500 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-slate-200/60">
-                    Low
-                  </span>
-                  <h4 className="text-[14px] font-bold text-slate-500 mt-2.5 line-through">Setup project repo</h4>
-                  <p className="text-[12px] text-slate-400 mt-1 leading-relaxed line-through">
-                    Initialize project repository and setup CI/CD pipeline.
-                  </p>
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                    <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>10 Jun</span>
-                    </span>
-                    <img
-                      src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80"
-                      alt="user"
-                      className="h-6 w-6 rounded-full object-cover border border-white shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm opacity-80 relative">
-                  <span className="inline-block bg-slate-50 text-slate-500 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-slate-200/60">
-                    Low
-                  </span>
-                  <h4 className="text-[14px] font-bold text-slate-500 mt-2.5 line-through">Database optimization</h4>
-                  <p className="text-[12px] text-slate-400 mt-1 leading-relaxed line-through">
-                    Optimize database queries and improve performance.
-                  </p>
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
-                    <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>11 Jun</span>
-                    </span>
-                    <img
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80"
-                      alt="user"
-                      className="h-6 w-6 rounded-full object-cover border border-white shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-[#6B7280] bg-white transition cursor-pointer">
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  <span>Add Task</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Pagination buttons footer */}
-          <div className="flex items-center justify-between text-[13px] text-[#6B7280] font-semibold py-4 border-t border-[#E5E7EB] pt-6">
-            <span>Showing 1–12 of 124 tasks</span>
-            <div className="flex space-x-2">
-              <button disabled className="px-3.5 py-1.5 border border-[#E5E7EB] rounded-[12px] bg-white text-slate-400 cursor-not-allowed">
-                Previous
-              </button>
-              <button className="px-3.5 py-1.5 border border-[#E5E7EB] rounded-[12px] bg-white hover:bg-slate-50 text-slate-700 cursor-pointer">
-                Next
-              </button>
+            {/* Filters and Sort Dropdown Controls */}
+            <div className="flex items-center space-x-3 self-end sm:self-auto">
+              <FilterTabs activeStatus={activeStatus} onStatusChange={handleStatusChange} />
+              <Dropdown
+                options={sortOptions}
+                value={sortOrder}
+                onChange={handleSortChange}
+              />
             </div>
           </div>
+
+          {error ? (
+            <div className="bg-red-50 border border-red-200 rounded-[16px] p-6 flex flex-col items-center justify-center space-y-3.5 w-full min-h-[250px] text-center">
+              <AlertCircle className="h-9 w-9 text-red-500" />
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-[#111827]">Unable to load tasks</h3>
+                <p className="text-xs text-slate-500 max-w-sm">
+                  There was an issue fetching tasks from the backend database. Please try again.
+                </p>
+              </div>
+              <button
+                onClick={() => fetchBoardTasks(currentPage, activeStatus, debouncedSearch, sortOrder)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Board 3-Columns Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                
+                {/* Column 1: Pending */}
+                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="h-2 w-2 rounded-full bg-amber-500" />
+                      <span className="font-bold text-sm text-[#111827] font-sans">Pending</span>
+                      <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
+                        {pendingTasks.length}
+                      </span>
+                    </div>
+                    <div className="flex space-x-1 text-slate-400">
+                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><Plus className="h-3.5 w-3.5" /></button>
+                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {renderColumnContent(pendingTasks, 'No pending tasks')}
+                    
+                    {!loading && (
+                      <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-not-allowed">
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        <span>Add Task</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 2: In Progress */}
+                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="h-2 w-2 rounded-full bg-blue-500" />
+                      <span className="font-bold text-sm text-[#111827] font-sans">In Progress</span>
+                      <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
+                        {inProgressTasks.length}
+                      </span>
+                    </div>
+                    <div className="flex space-x-1 text-slate-400">
+                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><Plus className="h-3.5 w-3.5" /></button>
+                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {renderColumnContent(inProgressTasks, 'No tasks in progress')}
+                    
+                    {!loading && (
+                      <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-not-allowed">
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        <span>Add Task</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 3: Completed */}
+                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="h-2 w-2 rounded-full bg-green-500" />
+                      <span className="font-bold text-sm text-[#111827] font-sans">Completed</span>
+                      <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
+                        {completedTasks.length}
+                      </span>
+                    </div>
+                    <div className="flex space-x-1 text-slate-400">
+                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><Plus className="h-3.5 w-3.5" /></button>
+                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {renderColumnContent(completedTasks, 'No completed tasks')}
+                    
+                    {!loading && (
+                      <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-not-allowed">
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        <span>Add Task</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Pagination controls footer */}
+              {paginationData && (
+                <Pagination
+                  pagination={paginationData}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
+          )}
         </div>
 
         {/* Right Side: Activity Log Column (1/4 span) */}
@@ -326,7 +322,7 @@ const DashboardPage = () => {
             <h3 className="text-[16px] font-bold text-[#111827] font-sans">
               Activity Log
             </h3>
-            <button className="text-xs text-[#6366F1] font-bold hover:underline cursor-pointer">
+            <button className="text-xs text-[#6366F1] font-bold hover:underline cursor-not-allowed">
               View all
             </button>
           </div>
