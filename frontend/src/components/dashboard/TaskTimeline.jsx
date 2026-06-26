@@ -1,115 +1,217 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
 
-const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
- * Generates an array of 7 days starting from today.
+ * Returns formatted date string (YYYY-MM-DD) for comparisons.
  */
-export const getTimelineDays = () => {
-  const days = [];
-  const today = new Date();
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    
-    let label = '';
-    if (i === 0) label = 'Today';
-    else if (i === 1) label = 'Tomorrow';
-    else label = DAYS_OF_WEEK[d.getDay()];
-
-    days.push({
-      dateStr: d.toISOString().split('T')[0], // YYYY-MM-DD format
-      label,
-      dateObj: d,
-    });
-  }
-  return days;
+const formatDateStr = (dateObj) => {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 /**
- * Task Timeline hero selector.
- * Displays horizontal day items.
+ * Dynamic Task Timeline Date Rail (Phase 8C).
+ * Automatically calculates today, aggregates counts from backend tasks,
+ * and navigates in steps of exactly 7 days.
  */
-const TaskTimeline = ({ tasks = [], selectedDate, onSelectDate }) => {
-  const days = getTimelineDays();
+const TaskTimeline = ({
+  tasks = [],
+  selectedDate,
+  onSelectDate,
+  error = null,
+  onRetry,
+}) => {
+  // Calendar viewport starts centered around today
+  const today = useMemo(() => new Date(), []);
+  const todayStr = useMemo(() => formatDateStr(today), [today]);
 
-  return (
-    <div className="space-y-3 w-full">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-          Task Timeline
-        </h3>
-        {selectedDate && (
+  const [anchorDate, setAnchorDate] = useState(() => {
+    const d = new Date(today);
+    // Position today near the middle of the first 7-day frame
+    d.setDate(today.getDate() - 3);
+    return d;
+  });
+
+  // Generate 7 consecutive days starting from anchorDate
+  const timelineDays = useMemo(() => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(anchorDate);
+      d.setDate(anchorDate.getDate() + i);
+      const dateStr = formatDateStr(d);
+      
+      days.push({
+        dateStr,
+        dayName: DAYS_OF_WEEK[d.getDay()],
+        dayNum: d.getDate(),
+        monthName: MONTHS[d.getMonth()],
+        isToday: dateStr === todayStr,
+        dateObj: d,
+      });
+    }
+    return days;
+  }, [anchorDate, todayStr]);
+
+  // Viewport navigation
+  const handlePrevWeek = () => {
+    setAnchorDate((prev) => {
+      const newD = new Date(prev);
+      newD.setDate(prev.getDate() - 7);
+      return newD;
+    });
+  };
+
+  const handleNextWeek = () => {
+    setAnchorDate((prev) => {
+      const newD = new Date(prev);
+      newD.setDate(prev.getDate() + 7);
+      return newD;
+    });
+  };
+
+  const handleResetToToday = () => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - 3);
+    setAnchorDate(d);
+    onSelectDate(todayStr);
+  };
+
+  if (error) {
+    return (
+      <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 w-full h-[132px] select-none">
+        <div className="flex items-center space-x-3">
+          <AlertCircle className="h-5 w-5 text-red-500" />
+          <span className="text-sm font-bold text-slate-800">Unable to load timeline</span>
+        </div>
+        {onRetry && (
           <button
-            onClick={() => onSelectDate(null)}
-            className="text-xs text-brand-600 hover:text-brand-700 font-semibold cursor-pointer"
+            onClick={onRetry}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer"
           >
-            Clear Filter
+            Retry
           </button>
         )}
       </div>
+    );
+  }
 
-      <div className="flex items-center space-x-3 overflow-x-auto pb-2 scrollbar-none w-full -mx-4 sm:-mx-0 px-4 sm:px-0">
-        {days.map((day) => {
-          const isSelected = selectedDate === day.dateStr;
-          
-          // Find tasks matching this day's due date
-          const dayTasks = tasks.filter((t) => {
-            if (!t.dueDate) return false;
-            return t.dueDate.startsWith(day.dateStr);
-          });
+  return (
+    <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
+      {/* Header controls */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-[18px] font-bold text-[#111827] tracking-tight font-sans">
+          Task Timeline
+        </h2>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleResetToToday}
+            className="px-3.5 py-1.5 border border-[#E5E7EB] rounded-xl text-xs font-bold text-[#111827] bg-[#F6F8FB] hover:bg-slate-50 cursor-pointer transition"
+          >
+            Today
+          </button>
+          <button className="p-1.5 border border-[#E5E7EB] rounded-xl text-slate-400 cursor-not-allowed bg-white">
+            <Calendar className="h-4.5 w-4.5" />
+          </button>
+        </div>
+      </div>
 
-          // Determine mini status summary dots
-          const hasPending = dayTasks.some((t) => t.status === 'Pending');
-          const hasInProgress = dayTasks.some((t) => t.status === 'In Progress');
-          const hasCompleted = dayTasks.some((t) => t.status === 'Completed');
+      {/* Date Rail with Left/Right Navigations */}
+      <div className="relative flex items-center justify-between gap-2">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handlePrevWeek}
+          className="p-2 border border-[#E5E7EB] rounded-full hover:bg-slate-50 text-slate-500 hover:text-slate-800 shrink-0 cursor-pointer transition shadow-soft-sm"
+          aria-label="Previous 7 Days"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </motion.button>
 
-          return (
-            <button
-              key={day.dateStr}
-              onClick={() => onSelectDate(isSelected ? null : day.dateStr)}
-              className={`flex-1 min-w-[100px] sm:min-w-[120px] bg-white border p-3.5 rounded-2xl text-left transition-all duration-200 select-none cursor-pointer focus:outline-none ${
-                isSelected
-                  ? 'border-brand-500 ring-2 ring-brand-500/10 shadow-soft-md'
-                  : 'border-slate-200 hover:border-slate-300 hover:shadow-soft-sm'
-              }`}
-            >
-              {/* Day Label */}
-              <p className={`text-xs font-bold ${isSelected ? 'text-brand-600' : 'text-slate-500'}`}>
-                {day.label}
-              </p>
-              
-              {/* Date String e.g. Jun 26 */}
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                {day.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
+        {/* Responsive viewport layout: Desktop shows 7, Tablet shows 5 (via tailwind hidden/block), Mobile swiping */}
+        <div className="flex-1 flex justify-between items-stretch px-2 overflow-x-auto scrollbar-none space-x-2 md:space-x-3 lg:space-x-4">
+          {timelineDays.map((day, idx) => {
+            const isSelected = selectedDate === day.dateStr;
+            
+            // Calculate total tasks due this day from backend tasks
+            const dayTasks = tasks.filter((t) => t.dueDate && t.dueDate.startsWith(day.dateStr));
+            const count = dayTasks.length;
 
-              {/* Status Indicators & Count Badge */}
-              <div className="flex items-center justify-between mt-3.5 pt-2 border-t border-slate-50">
-                <div className="flex space-x-1">
-                  {hasPending && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
-                  {hasInProgress && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
-                  {hasCompleted && <span className="h-1.5 w-1.5 rounded-full bg-green-500" />}
-                  {dayTasks.length === 0 && <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />}
-                </div>
+            const hasPending = dayTasks.some((t) => t.status === 'Pending');
+            const hasProgress = dayTasks.some((t) => t.status === 'In Progress');
+            const hasCompleted = dayTasks.some((t) => t.status === 'Completed');
 
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                  isSelected ? 'bg-brand-50 text-brand-600' : 'bg-slate-100 text-slate-600'
+            // Hide last 2 items on tablet (idx >= 5) to show exactly 5 days
+            const responsivenessClass = idx >= 5 ? 'hidden lg:flex' : 'flex';
+
+            return (
+              <motion.button
+                whileHover={{ y: -2, scale: 1.01 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                key={day.dateStr}
+                onClick={() => onSelectDate(isSelected ? null : day.dateStr)}
+                className={`${responsivenessClass} flex-1 min-w-[95px] sm:min-w-[110px] md:min-w-[125px] flex-col items-center justify-center p-3.5 rounded-[16px] border text-center transition-all cursor-pointer relative ${
+                  day.isToday
+                    ? 'bg-[#111827] text-white border-[#111827] shadow-md z-10'
+                    : isSelected
+                    ? 'border-[#6366F1] bg-[#eef2ff]/30 ring-2 ring-[#6366F1]/10'
+                    : 'bg-white border-[#E5E7EB] hover:border-slate-350'
+                }`}
+              >
+                {/* TODAY badge */}
+                {day.isToday && (
+                  <span className="absolute -top-1.5 bg-[#6366F1] text-white text-[8px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full">
+                    Today
+                  </span>
+                )}
+
+                {/* Day Name */}
+                <span className={`text-[12px] font-semibold ${
+                  day.isToday ? 'text-slate-400' : 'text-slate-450'
                 }`}>
-                  {dayTasks.length}
+                  {day.dayName}
                 </span>
-              </div>
-              
-              {/* Tiny Preview */}
-              {dayTasks.length > 0 && (
-                <div className="text-[10px] text-slate-400 truncate mt-1">
-                  {dayTasks[0].title}
+
+                {/* Day Number + Month */}
+                <span className={`text-[16px] sm:text-[18px] font-extrabold mt-0.5 leading-none ${
+                  day.isToday ? 'text-white' : 'text-slate-800'
+                }`}>
+                  {day.dayNum} {day.monthName}
+                </span>
+
+                {/* Status Dot Indicators */}
+                <div className="flex space-x-1 mt-2.5 h-1.5 items-center justify-center">
+                  {hasPending && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
+                  {hasProgress && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
+                  {hasCompleted && <span className="h-1.5 w-1.5 rounded-full bg-green-500" />}
+                  {count === 0 && <span className="h-1 w-1 rounded-full bg-slate-200" />}
                 </div>
-              )}
-            </button>
-          );
-        })}
+
+                {/* Task Count descriptor */}
+                <span className={`text-[10px] font-bold mt-2 ${
+                  day.isToday ? 'text-slate-350' : 'text-slate-450'
+                }`}>
+                  {count === 0 ? '0 Tasks' : `${count} ${count === 1 ? 'Task' : 'Tasks'}`}
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleNextWeek}
+          className="p-2 border border-[#E5E7EB] rounded-full hover:bg-slate-50 text-slate-500 hover:text-slate-800 shrink-0 cursor-pointer transition shadow-soft-sm"
+          aria-label="Next 7 Days"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </motion.button>
       </div>
     </div>
   );

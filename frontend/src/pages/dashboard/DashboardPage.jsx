@@ -1,116 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Calendar, MoreHorizontal } from 'lucide-react';
+import { Plus, Calendar, MoreHorizontal } from 'lucide-react';
 import WorkspaceHeader from '../../components/dashboard/WorkspaceHeader';
-import PlaceholderCard from '../../components/dashboard/PlaceholderCard';
 import TodayFocus from '../../components/dashboard/TodayFocus';
+import TaskTimeline from '../../components/dashboard/TaskTimeline';
+import taskService from '../../services/taskService';
 
 /**
  * Enterprise Workspace Dashboard Page.
- * High-fidelity static mockup of the approved design for Phase 8A Visual Refinement.
+ * Coordinates dynamic Task Timeline with static board mockups for Phase 8C.
  */
 const DashboardPage = () => {
+  const [tasks, setTasks] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch all tasks for due-date timeline calculations (max limit 150)
+  const fetchTasksData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await taskService.getTasks({ limit: 150 });
+      if (response?.success) {
+        setTasks(response.data.tasks || []);
+      } else {
+        setError('Unable to load timeline');
+      }
+    } catch (err) {
+      setError('Unable to load timeline');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasksData();
+  }, [fetchTasksData]);
+
   return (
     <div className="space-y-8 pb-10 w-full overflow-hidden">
       
       {/* ── Page Header Greeting ── */}
       <WorkspaceHeader />
 
-      {/* ── Today's Focus (Live statistics integration for Phase 8B) ── */}
+      {/* ── Today's Focus row metrics ── */}
       <TodayFocus />
 
-
-      {/* ── Signature Task Timeline (Horizontal Date Rail Placeholder) ── */}
-      <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[18px] font-bold text-[#111827] tracking-tight font-sans">
-            Task Timeline
-          </h2>
-          <div className="flex items-center space-x-2">
-            <button className="px-3.5 py-1.5 border border-[#E5E7EB] rounded-xl text-xs font-bold text-[#111827] bg-[#F6F8FB] hover:bg-slate-50 cursor-pointer">
-              Today
-            </button>
-            <button className="p-1.5 border border-[#E5E7EB] rounded-xl text-[#6B7280] hover:text-[#111827] bg-white cursor-pointer">
-              <Calendar className="h-4.5 w-4.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Horizontal scroll dates line */}
-        <div className="relative flex items-center justify-between">
-          <button className="p-2 border border-[#E5E7EB] rounded-full hover:bg-slate-50 text-slate-500 hover:text-slate-800 shrink-0 cursor-pointer">
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-
-          <div className="flex-1 flex justify-around items-center px-4 overflow-x-auto scrollbar-none space-x-2">
-            {/* Thu 11 Jun */}
-            <div className="flex flex-col items-center py-2 text-center select-none shrink-0">
-              <span className="text-[13px] text-slate-400 font-semibold">Thu</span>
-              <span className="text-[14px] text-slate-700 font-bold mt-1">11 Jun</span>
-              <span className="text-[10px] text-slate-400 font-bold mt-3">2 tasks</span>
-            </div>
-
-            {/* Fri 12 Jun */}
-            <div className="flex flex-col items-center py-2 text-center select-none shrink-0">
-              <span className="text-[13px] text-slate-400 font-semibold">Fri</span>
-              <span className="text-[14px] text-slate-700 font-bold mt-1">12 Jun</span>
-              <span className="text-[10px] text-slate-400 font-bold mt-3">4 tasks</span>
-            </div>
-
-            {/* Sat 13 Jun (Today selected highlighted) */}
-            <div className="bg-[#111827] text-white px-5 py-4.5 rounded-[16px] flex flex-col items-center justify-center text-center shadow-lg relative shrink-0 min-w-[110px]">
-              <span className="absolute -top-1.5 bg-[#6366F1] text-white text-[8px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full select-none">
-                Today
-              </span>
-              <span className="text-[12px] text-slate-400 font-semibold">Sat</span>
-              <span className="text-[18px] text-white font-extrabold mt-0.5 leading-none">13 Jun</span>
-              {/* Dot indicators */}
-              <div className="flex space-x-1 mt-2.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-              </div>
-              <span className="text-[10px] text-slate-350 font-bold mt-2">6 tasks</span>
-            </div>
-
-            {/* Sun 14 Jun */}
-            <div className="flex flex-col items-center py-2 text-center select-none shrink-0">
-              <span className="text-[13px] text-slate-400 font-semibold">Sun</span>
-              <span className="text-[14px] text-slate-700 font-bold mt-1">14 Jun</span>
-              <span className="inline-block bg-blue-50 text-blue-600 text-[8px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full mt-2.5">
-                Design Review
-              </span>
-            </div>
-
-            {/* Mon 15 Jun */}
-            <div className="flex flex-col items-center py-2 text-center select-none shrink-0">
-              <span className="text-[13px] text-slate-400 font-semibold">Mon</span>
-              <span className="text-[14px] text-slate-700 font-bold mt-1">15 Jun</span>
-              <span className="inline-block bg-green-50 text-green-600 text-[8px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full mt-2.5">
-                API Review
-              </span>
-            </div>
-
-            {/* Tue 16 Jun */}
-            <div className="flex flex-col items-center py-2 text-center select-none shrink-0">
-              <span className="text-[13px] text-slate-400 font-semibold">Tue</span>
-              <span className="text-[14px] text-slate-700 font-bold mt-1">16 Jun</span>
-              <span className="text-[10px] text-slate-400 font-bold mt-3">1 task</span>
-            </div>
-
-            {/* Wed 17 Jun */}
-            <div className="flex flex-col items-center py-2 text-center select-none shrink-0">
-              <span className="text-[13px] text-slate-400 font-semibold">Wed</span>
-              <span className="text-[14px] text-slate-700 font-bold mt-1">17 Jun</span>
-              <span className="text-[10px] text-slate-400 font-bold mt-3">2 tasks</span>
-            </div>
-          </div>
-
-          <button className="p-2 border border-[#E5E7EB] rounded-full hover:bg-slate-50 text-slate-500 hover:text-slate-800 shrink-0 cursor-pointer">
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      {/* ── Signature Task Timeline (Dynamic horizontal dates rail) ── */}
+      <TaskTimeline
+        tasks={tasks}
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
+        error={error}
+        onRetry={fetchTasksData}
+      />
 
       {/* ── Split Grid: Task Columns (3/4 span) and Activity Log (1/4 span) ── */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 w-full items-start">
@@ -159,13 +103,12 @@ const DashboardPage = () => {
 
               {/* Task Cards Stack */}
               <div className="space-y-3">
-                {/* Card 1 */}
                 <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
                   <span className="inline-block bg-amber-50 text-[#D97706] text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-amber-100">
                     Medium
                   </span>
                   <h4 className="text-[14px] font-bold text-[#111827] mt-2.5">Design login page</h4>
-                  <p className="text-[12px] text-slate-450 mt-1 leading-relaxed">
+                  <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
                     Create a modern and clean login page for the application.
                   </p>
                   <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
@@ -181,13 +124,12 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Card 2 */}
                 <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
                   <span className="inline-block bg-red-50 text-red-700 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-red-100">
                     High
                   </span>
                   <h4 className="text-[14px] font-bold text-[#111827] mt-2.5">API Integration</h4>
-                  <p className="text-[12px] text-slate-450 mt-1 leading-relaxed">
+                  <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
                     Integrate backend APIs for task management and authentication.
                   </p>
                   <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
@@ -203,7 +145,6 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Add Task Trigger layout row */}
                 <button className="w-full py-2.5 border border-[#E5E7EB] border-dashed hover:border-slate-350 rounded-[12px] flex items-center justify-center text-[12px] font-bold text-slate-450 hover:text-slate-700 bg-white transition cursor-pointer">
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   <span>Add Task</span>
@@ -229,7 +170,6 @@ const DashboardPage = () => {
 
               {/* Task Cards Stack */}
               <div className="space-y-3">
-                {/* Card 1 */}
                 <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
                   <span className="inline-block bg-red-50 text-red-700 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-red-100">
                     High
@@ -238,7 +178,6 @@ const DashboardPage = () => {
                   <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
                     Build the main dashboard interface with all components.
                   </p>
-                  {/* Progress indicator */}
                   <div className="mt-3.5 space-y-1">
                     <div className="flex justify-between text-[10px] text-slate-500 font-bold">
                       <span>Progress</span>
@@ -261,7 +200,6 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Card 2 */}
                 <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm hover:shadow-soft-md transition-shadow relative">
                   <span className="inline-block bg-amber-50 text-[#D97706] text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-amber-100">
                     Medium
@@ -270,7 +208,6 @@ const DashboardPage = () => {
                   <p className="text-[12px] text-slate-455 mt-1 leading-relaxed">
                     Implement JWT authentication system and protected routes.
                   </p>
-                  {/* Progress indicator */}
                   <div className="mt-3.5 space-y-1">
                     <div className="flex justify-between text-[10px] text-slate-500 font-bold">
                       <span>Progress</span>
@@ -318,7 +255,6 @@ const DashboardPage = () => {
 
               {/* Task Cards Stack */}
               <div className="space-y-3">
-                {/* Card 1 */}
                 <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm opacity-80 relative">
                   <span className="inline-block bg-slate-50 text-slate-500 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-slate-200/60">
                     Low
@@ -340,7 +276,6 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Card 2 */}
                 <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-soft-sm opacity-80 relative">
                   <span className="inline-block bg-slate-50 text-slate-500 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border border-slate-200/60">
                     Low
@@ -398,7 +333,6 @@ const DashboardPage = () => {
 
           {/* Vertical log elements */}
           <div className="space-y-4">
-            {/* Entry 1 */}
             <div className="flex items-start space-x-3 text-xs leading-relaxed">
               <div className="h-6 w-6 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
                 +
@@ -411,7 +345,6 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Entry 2 */}
             <div className="flex items-start space-x-3 text-xs leading-relaxed">
               <div className="h-6 w-6 rounded-full bg-amber-50 text-[#D97706] border border-amber-100 flex items-center justify-center shrink-0">
                 ✎
@@ -424,7 +357,6 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Entry 3 */}
             <div className="flex items-start space-x-3 text-xs leading-relaxed">
               <div className="h-6 w-6 rounded-full bg-green-50 text-green-600 border border-green-100 flex items-center justify-center shrink-0">
                 ✓
@@ -437,7 +369,6 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Entry 4 */}
             <div className="flex items-start space-x-3 text-xs leading-relaxed">
               <div className="h-6 w-6 rounded-full bg-red-50 text-red-650 border border-red-100 flex items-center justify-center shrink-0">
                 ×
