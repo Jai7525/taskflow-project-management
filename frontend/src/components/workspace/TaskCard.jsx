@@ -68,21 +68,8 @@ const TaskCard = ({ task, onClick }) => {
         {task.description}
       </p>
 
-      {/* Progress slider placeholder - only for "In Progress" status */}
-      {task.status === 'In Progress' && (
-        <div className="mt-3.5 space-y-1">
-          <div className="flex justify-between text-[10px] text-slate-500 font-bold">
-            <span>Progress</span>
-            <span>60%</span>
-          </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#6366F1] h-full w-[60%]" />
-          </div>
-        </div>
-      )}
-
       {/* Card Footer Info */}
-      <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-50">
+      <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-50">
         <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
           <Calendar className="h-3 w-3" />
           <span>{task.dueDate ? formatDate(task.dueDate) : 'No date'}</span>
