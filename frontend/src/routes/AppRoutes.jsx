@@ -4,7 +4,7 @@ import { ROUTES } from '../constants/routes';
 
 // Layouts
 import AuthLayout from '../layouts/AuthLayout';
-import DashboardLayout from '../layouts/DashboardLayout';
+import WorkspaceLayout from '../components/layout/WorkspaceLayout';
 
 // Protection
 import ProtectedRoute from './ProtectedRoute';
@@ -13,8 +13,6 @@ import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
-import AddTaskPage from '../pages/tasks/AddTaskPage';
-import TaskDetailsPage from '../pages/tasks/TaskDetailsPage';
 
 const AppRoutes = () => {
   return (
@@ -26,17 +24,14 @@ const AppRoutes = () => {
       </Route>
 
       {/* Protected Dashboard/Task Routes */}
-      {/* ProtectedRoute wraps a layout that itself renders <Outlet /> */}
       <Route
         element={
           <ProtectedRoute>
-            <DashboardLayout />
+            <WorkspaceLayout />
           </ProtectedRoute>
         }
       >
         <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
-        <Route path={ROUTES.ADD_TASK} element={<AddTaskPage />} />
-        <Route path={ROUTES.TASK_DETAILS} element={<TaskDetailsPage />} />
       </Route>
 
       {/* Fallback Catch-all Route */}
