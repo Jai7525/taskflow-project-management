@@ -60,7 +60,7 @@ const StatisticCard = ({
           <span className="text-[13px] font-bold text-[#6B7280]">{title}</span>
         </div>
         <h2 className="text-3xl font-extrabold text-[#111827] leading-none">
-          {value === 0 ? '0 Tasks' : `${value} ${value === 1 ? 'Task' : 'Tasks'}`}
+          {value}
         </h2>
         <span className="text-[11px] text-[#6B7280] font-medium block">{description}</span>
       </div>
