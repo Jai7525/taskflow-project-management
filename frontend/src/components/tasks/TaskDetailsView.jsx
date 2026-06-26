@@ -2,11 +2,24 @@ import React from 'react';
 import { Calendar, Clock, User, Award, CheckCircle } from 'lucide-react';
 import Badge from '../ui/Badge';
 import { formatDate } from '../../utils/formatDate';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Premium Read-Only Details layout view for Tasks details (Phase 8F).
  */
 const TaskDetailsView = ({ task }) => {
+  const { user } = useAuth();
+  const userName = user?.name || 'Jayakumar M';
+  
+  const initials = React.useMemo(() => {
+    if (!userName) return 'TU';
+    const parts = userName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }, [userName]);
+
   const getPriorityVariant = (priority) => {
     switch (priority?.toLowerCase()) {
       case 'high':
@@ -47,7 +60,7 @@ const TaskDetailsView = ({ task }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-5 flex flex-col scrollbar-none select-none">
+    <div className="flex-1 overflow-y-auto p-6 space-y-5 flex flex-col scrollbar-none select-none bg-white">
       
       {/* ── Title ── */}
       <div>
@@ -119,10 +132,10 @@ const TaskDetailsView = ({ task }) => {
               Created By
             </span>
             <div className="flex items-center space-x-2 mt-0.5">
-              <div className="h-6 w-6 rounded-full bg-indigo-55 text-[#6366F1] flex items-center justify-center text-[10px] font-bold border border-indigo-100 shadow-sm select-none shrink-0">
-                JM
+              <div className="h-6 w-6 rounded-full bg-indigo-50 text-[#6366F1] flex items-center justify-center text-[10px] font-bold border border-indigo-100 shadow-sm select-none shrink-0">
+                {initials}
               </div>
-              <span className="font-bold text-slate-700 text-xs">Jayakumar M</span>
+              <span className="font-bold text-slate-700 text-xs">{userName}</span>
             </div>
           </div>
 
@@ -149,13 +162,13 @@ const TaskDetailsView = ({ task }) => {
           {/* Activity 1 */}
           <div className="relative">
             <div className="absolute -left-[38px] top-0">
-              <div className="h-6 w-6 rounded-full bg-indigo-55 text-[#6366F1] flex items-center justify-center text-[10px] font-bold ring-4 ring-white select-none shrink-0">
-                JM
+              <div className="h-6 w-6 rounded-full bg-indigo-50 text-[#6366F1] flex items-center justify-center text-[10px] font-bold ring-4 ring-white select-none shrink-0">
+                {initials}
               </div>
             </div>
             <div className="text-xs">
-              <p className="text-slate-650">
-                <span className="font-semibold text-slate-900">Jayakumar M</span> updated the task status
+              <p className="text-slate-600">
+                <span className="font-semibold text-slate-900">{userName}</span> updated the task status
               </p>
               <span className="text-[10px] text-slate-400 block mt-0.5">
                 {task.updatedAt ? formatDateTime(task.updatedAt) : 'Just now'}
@@ -166,13 +179,13 @@ const TaskDetailsView = ({ task }) => {
           {/* Activity 2 */}
           <div className="relative">
             <div className="absolute -left-[38px] top-0">
-              <div className="h-6 w-6 rounded-full bg-indigo-55 text-[#6366F1] flex items-center justify-center text-[10px] font-bold ring-4 ring-white select-none shrink-0">
-                JM
+              <div className="h-6 w-6 rounded-full bg-indigo-50 text-[#6366F1] flex items-center justify-center text-[10px] font-bold ring-4 ring-white select-none shrink-0">
+                {initials}
               </div>
             </div>
             <div className="text-xs">
-              <p className="text-slate-650">
-                <span className="font-semibold text-slate-900">Jayakumar M</span> created this task
+              <p className="text-slate-600">
+                <span className="font-semibold text-slate-900">{userName}</span> created this task
               </p>
               <span className="text-[10px] text-slate-400 block mt-0.5">
                 {task.createdAt ? formatDateTime(task.createdAt) : 'Just now'}

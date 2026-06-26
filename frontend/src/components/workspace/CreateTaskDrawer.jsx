@@ -167,9 +167,9 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
 
           {/* Drawer container panel (Slide from right transition) */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             role="dialog"
             aria-modal="true"
@@ -189,7 +189,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
               <button
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="p-1.5 text-slate-400 hover:text-slate-650 hover:bg-slate-50 rounded-xl transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 text-slate-400 hover:text-slate-605 hover:bg-slate-50 rounded-xl transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Close drawer"
               >
                 <X className="h-5 w-5" />
@@ -221,7 +221,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                   placeholder="Enter task title..."
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm ${
+                  className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm ${
                     errors.title ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
                   }`}
                 />
@@ -244,7 +244,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                   placeholder="Add more details about this task..."
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
-                  className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm resize-none ${
+                  className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm resize-none ${
                     errors.description ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
                   }`}
                 />
@@ -272,7 +272,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                     disabled={isSubmitting}
                     value={formData.status}
                     onChange={(e) => handleInputChange('status', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100/30 focus:bg-white rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm cursor-pointer"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
                   >
                     <option value="Pending">Pending</option>
                     <option value="In Progress">In Progress</option>
@@ -289,7 +289,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                     disabled={isSubmitting}
                     value={formData.priority}
                     onChange={(e) => handleInputChange('priority', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100/30 focus:bg-white rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm cursor-pointer"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -317,7 +317,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                     disabled={isSubmitting}
                     value={formData.dueDate}
                     onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm cursor-pointer ${
+                    className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer ${
                       errors.dueDate ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
                     }`}
                   />
@@ -337,7 +337,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="px-4.5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </motion.button>

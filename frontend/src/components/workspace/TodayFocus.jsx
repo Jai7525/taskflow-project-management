@@ -1,8 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ClipboardList, Clock, Loader, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 import taskService from '../../services/taskService';
 import StatisticCard from './StatisticCard';
 import StatisticSkeleton from './StatisticSkeleton';
+
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.04,
+    }
+  }
+};
 
 /**
  * TodayFocus section containing 4 statistics cards.
@@ -21,10 +31,10 @@ const TodayFocus = ({ refreshTrigger }) => {
       if (response?.success) {
         setStatistics(response.data);
       } else {
-        setError("Unable to load today's summary.");
+        setError(navigator.onLine ? "Unable to load statistics" : "You're offline. Check your connection.");
       }
     } catch (err) {
-      setError("Unable to load today's summary.");
+      setError(!navigator.onLine ? "You're offline. Check your connection." : "Unable to load statistics");
     } finally {
       setLoading(false);
     }
@@ -46,6 +56,7 @@ const TodayFocus = ({ refreshTrigger }) => {
   }
 
   if (error) {
+    const isOffline = error.includes("offline");
     return (
       <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-4 w-full h-auto sm:h-[132px] select-none">
         <div className="flex items-center space-x-3.5">
@@ -53,15 +64,19 @@ const TodayFocus = ({ refreshTrigger }) => {
             <AlertTriangle className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-800 font-sans">{error}</p>
-            <p className="text-xs text-slate-450 mt-0.5 font-medium">Please check your internet connection and try again.</p>
+            <p className="text-sm font-bold text-slate-800 font-sans">
+              {isOffline ? "You're offline." : "Unable to load statistics"}
+            </p>
+            <p className="text-xs text-slate-450 mt-0.5 font-medium">
+              {isOffline ? "Check your connection." : "Please try again later."}
+            </p>
           </div>
         </div>
         <button
           onClick={fetchStats}
           className="flex items-center space-x-1.5 px-4.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer"
         >
-          <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
+          <RefreshCw className="h-3.5 w-3.5" />
           <span>Retry</span>
         </button>
       </div>
@@ -72,13 +87,17 @@ const TodayFocus = ({ refreshTrigger }) => {
   const data = statistics || { total: 0, pending: 0, inProgress: 0, completed: 0 };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full"
+    >
       <StatisticCard
         title="Total Tasks"
         value={data.total}
         description="All assigned tasks"
         icon={ClipboardList}
-        trend="▲ 12%"
         colorTheme="indigo"
       />
       <StatisticCard
@@ -86,7 +105,6 @@ const TodayFocus = ({ refreshTrigger }) => {
         value={data.pending}
         description="Waiting to start"
         icon={Clock}
-        trend="▲ 8%"
         colorTheme="amber"
       />
       <StatisticCard
@@ -94,7 +112,6 @@ const TodayFocus = ({ refreshTrigger }) => {
         value={data.inProgress}
         description="Currently active"
         icon={Loader}
-        trend="▲ 5%"
         colorTheme="blue"
       />
       <StatisticCard
@@ -102,10 +119,9 @@ const TodayFocus = ({ refreshTrigger }) => {
         value={data.completed}
         description="Finished tasks"
         icon={CheckCircle2}
-        trend="▲ 16%"
         colorTheme="green"
       />
-    </div>
+    </motion.div>
   );
 };
 

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { User, Mail, Lock, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import authService from '../../services/authService';
 import { ROUTES } from '../../constants/routes';
 
@@ -31,12 +32,11 @@ const RegisterPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Remove confirmPassword before sending request
       const { name, email, password } = data;
       const response = await authService.register({ name, email, password });
       
       if (response && response.success) {
-        toast.success('Registration successful');
+        toast.success('Registration successful! Please login.');
         navigate(ROUTES.LOGIN);
       } else {
         toast.error('Registration failed. Please try again.');
@@ -45,7 +45,6 @@ const RegisterPage = () => {
       const status = error.response?.status;
       const serverMessage = error.response?.data?.message;
 
-      // Handle duplicate email check (often 400 or 409)
       if (status === 400 && serverMessage?.toLowerCase().includes('already in use')) {
         toast.error('Email already exists');
       } else if (status === 409) {
@@ -64,34 +63,34 @@ const RegisterPage = () => {
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <h2 className="text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight font-sans">
           Create Account
         </h2>
-        <p className="mt-2 text-sm text-slate-500">
-          Get started by creating your developer account
+        <p className="mt-2 text-sm text-slate-500 font-medium">
+          Get started by creating your developer account.
         </p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {/* Full Name */}
-        <div>
-          <label htmlFor="name" className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <label htmlFor="name" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Full Name
           </label>
-          <div className="relative">
+          <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <User className="h-4.5 w-4.5 text-slate-400" />
+              <User className="h-4.5 w-4.5 text-slate-400 group-focus-within:text-[#6366F1] transition-colors duration-200" />
             </div>
             <input
               id="name"
               type="text"
               placeholder="John Doe"
               disabled={isSubmitting}
-              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition duration-150 text-sm ${
+              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ease-in-out text-sm font-medium hover:border-slate-300 ${
                 errors.name
-                  ? 'border-danger-500 focus:ring-danger-500/20'
-                  : 'border-slate-200 focus:ring-brand-500/20 focus:border-brand-500'
+                  ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500'
+                  : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
               }`}
               {...register('name', {
                 required: 'Full name is required',
@@ -99,28 +98,34 @@ const RegisterPage = () => {
             />
           </div>
           {errors.name && (
-            <p className="text-xs text-danger-500 mt-1 font-medium">{errors.name.message}</p>
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-500 mt-1 font-semibold"
+            >
+              {errors.name.message}
+            </motion.p>
           )}
         </div>
 
         {/* Email */}
-        <div>
-          <label htmlFor="email" className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Email Address
           </label>
-          <div className="relative">
+          <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Mail className="h-4.5 w-4.5 text-slate-400" />
+              <Mail className="h-4.5 w-4.5 text-slate-400 group-focus-within:text-[#6366F1] transition-colors duration-200" />
             </div>
             <input
               id="email"
               type="email"
               placeholder="name@company.com"
               disabled={isSubmitting}
-              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition duration-150 text-sm ${
+              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ease-in-out text-sm font-medium hover:border-slate-300 ${
                 errors.email
-                  ? 'border-danger-500 focus:ring-danger-500/20'
-                  : 'border-slate-200 focus:ring-brand-500/20 focus:border-brand-500'
+                  ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500'
+                  : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
               }`}
               {...register('email', {
                 required: 'Email address is required',
@@ -132,28 +137,34 @@ const RegisterPage = () => {
             />
           </div>
           {errors.email && (
-            <p className="text-xs text-danger-500 mt-1 font-medium">{errors.email.message}</p>
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-500 mt-1 font-semibold"
+            >
+              {errors.email.message}
+            </motion.p>
           )}
         </div>
 
         {/* Password */}
-        <div>
-          <label htmlFor="password" className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Password
           </label>
-          <div className="relative">
+          <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Lock className="h-4.5 w-4.5 text-slate-400" />
+              <Lock className="h-4.5 w-4.5 text-slate-400 group-focus-within:text-[#6366F1] transition-colors duration-200" />
             </div>
             <input
               id="password"
               type="password"
               placeholder="Minimum 8 characters"
               disabled={isSubmitting}
-              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition duration-150 text-sm ${
+              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ease-in-out text-sm font-medium hover:border-slate-300 ${
                 errors.password
-                  ? 'border-danger-500 focus:ring-danger-500/20'
-                  : 'border-slate-200 focus:ring-brand-500/20 focus:border-brand-500'
+                  ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500'
+                  : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
               }`}
               {...register('password', {
                 required: 'Password is required',
@@ -165,28 +176,34 @@ const RegisterPage = () => {
             />
           </div>
           {errors.password && (
-            <p className="text-xs text-danger-500 mt-1 font-medium">{errors.password.message}</p>
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-500 mt-1 font-semibold"
+            >
+              {errors.password.message}
+            </motion.p>
           )}
         </div>
 
         {/* Confirm Password */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <label htmlFor="confirmPassword" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Confirm Password
           </label>
-          <div className="relative">
+          <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Lock className="h-4.5 w-4.5 text-slate-400" />
+              <Lock className="h-4.5 w-4.5 text-slate-400 group-focus-within:text-[#6366F1] transition-colors duration-200" />
             </div>
             <input
               id="confirmPassword"
               type="password"
               placeholder="••••••••"
               disabled={isSubmitting}
-              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition duration-150 text-sm ${
+              className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ease-in-out text-sm font-medium hover:border-slate-300 ${
                 errors.confirmPassword
-                  ? 'border-danger-500 focus:ring-danger-500/20'
-                  : 'border-slate-200 focus:ring-brand-500/20 focus:border-brand-500'
+                  ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500'
+                  : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
               }`}
               {...register('confirmPassword', {
                 required: 'Confirm password is required',
@@ -196,9 +213,13 @@ const RegisterPage = () => {
             />
           </div>
           {errors.confirmPassword && (
-            <p className="text-xs text-danger-500 mt-1 font-medium">
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-500 mt-1 font-semibold"
+            >
               {errors.confirmPassword.message}
-            </p>
+            </motion.p>
           )}
         </div>
 
@@ -206,7 +227,7 @@ const RegisterPage = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex justify-center items-center py-2.5 px-4 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-medium text-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-soft-md shadow-brand-500/10 cursor-pointer"
+          className="w-full flex justify-center items-center py-2.5 px-4 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl font-bold text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-[#6366F1]/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_12px_rgba(99,102,241,.12)] hover:shadow-[0_6px_16px_rgba(99,102,241,.2)] hover:-translate-y-[1px] active:translate-y-0 cursor-pointer"
         >
           {isSubmitting ? (
             <>
@@ -220,9 +241,9 @@ const RegisterPage = () => {
       </form>
 
       {/* Redirect */}
-      <div className="text-center text-sm text-slate-500">
+      <div className="text-center text-sm text-slate-500 font-medium pt-2">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="font-semibold text-brand-500 hover:text-brand-600 transition">
+        <Link to={ROUTES.LOGIN} className="font-bold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
           Login
         </Link>
       </div>

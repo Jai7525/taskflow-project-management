@@ -97,7 +97,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
     <form
       id="edit-task-form"
       onSubmit={onSubmit}
-      className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-none select-none"
+      className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-none select-none bg-white"
     >
       {/* API Level Global Error */}
       {apiError && (
@@ -119,7 +119,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
           placeholder="Enter task title..."
           value={formData.title}
           onChange={(e) => handleInputChange('title', e.target.value)}
-          className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm ${
+          className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm ${
             errors.title ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
           }`}
         />
@@ -140,7 +140,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
           placeholder="Add more details about this task..."
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm resize-none ${
+          className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm resize-none ${
             errors.description ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
           }`}
         />
@@ -166,7 +166,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
             disabled={isSaving}
             value={formData.status}
             onChange={(e) => handleInputChange('status', e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100/30 focus:bg-white rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm cursor-pointer"
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
           >
             <option value="Pending">Pending</option>
             <option value="In Progress">In Progress</option>
@@ -183,7 +183,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
             disabled={isSaving}
             value={formData.priority}
             onChange={(e) => handleInputChange('priority', e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100/30 focus:bg-white rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm cursor-pointer"
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
           >
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
@@ -211,7 +211,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
             disabled={isSaving}
             value={formData.dueDate}
             onChange={(e) => handleInputChange('dueDate', e.target.value)}
-            className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition duration-150 text-sm cursor-pointer ${
+            className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer ${
               errors.dueDate ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
             }`}
           />

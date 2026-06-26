@@ -20,10 +20,10 @@ const DeleteConfirmationModal = ({ isOpen, onCancel, onConfirm, isDeleting }) =>
           >
             {/* Modal Dialog container */}
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              initial={{ y: 8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 8, opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
               className="bg-white border border-[#E5E7EB] rounded-[16px] max-w-sm w-full mx-4 p-6 shadow-2xl space-y-4 select-none"
               onClick={(e) => e.stopPropagation()} // prevent overlay click closing
             >
@@ -42,27 +42,23 @@ const DeleteConfirmationModal = ({ isOpen, onCancel, onConfirm, isDeleting }) =>
               </div>
 
               <div className="flex items-center justify-end space-x-2.5 pt-2">
-                <motion.button
-                  whileHover={{ scale: isDeleting ? 1 : 1.02 }}
-                  whileTap={{ scale: isDeleting ? 1 : 0.98 }}
+                <button
                   type="button"
                   onClick={onCancel}
                   disabled={isDeleting}
-                  className="px-4 py-2 border border-[#E5E7EB] hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-40 transition"
+                  className="px-4 py-2 border border-[#E5E7EB] hover:bg-slate-50 active:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-40 transition-colors duration-150"
                 >
                   Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: isDeleting ? 1 : 1.02 }}
-                  whileTap={{ scale: isDeleting ? 1 : 0.98 }}
+                </button>
+                <button
                   type="button"
                   onClick={onConfirm}
                   disabled={isDeleting}
-                  className="px-4.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-[0_1px_2px_rgba(220,38,38,0.15)] flex items-center space-x-1.5 transition disabled:opacity-75"
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-xs font-bold cursor-pointer shadow-[0_1px_2px_rgba(220,38,38,0.15)] flex items-center space-x-1.5 transition-colors duration-150 disabled:opacity-75"
                 >
                   {isDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                   <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
-                </motion.button>
+                </button>
               </div>
             </motion.div>
           </motion.div>

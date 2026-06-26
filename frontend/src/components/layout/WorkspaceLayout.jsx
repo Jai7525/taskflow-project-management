@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
 import CreateTaskDrawer from '../workspace/CreateTaskDrawer';
 import TaskDetailsDrawer from '../tasks/TaskDetailsDrawer';
+import { toast } from 'react-hot-toast';
 
 /**
  * WorkspaceLayout shell wrapping desktop Sidebar, sticky Navbar,
@@ -15,11 +16,51 @@ const WorkspaceLayout = () => {
   const [createDrawerDefaultStatus, setCreateDrawerDefaultStatus] = useState('Pending');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Online/Offline detection state
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
   // Details Drawer States
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      setRefreshTrigger((prev) => prev + 1);
+      toast.success("Connection restored. Dashboard updated.", {
+        id: "offline-status-toast",
+        duration: 3000,
+      });
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      toast.error("You're offline. Check your connection.", {
+        id: "offline-status-toast",
+        duration: 3000,
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Deduplicated offline action warning toast helper
+  const showOfflineToast = () => {
+    toast.error("Internet connection required to perform this action.", {
+      id: "offline-action-prevented",
+      duration: 3000,
+    });
+  };
+
   const openCreateTaskDrawer = (status = 'Pending') => {
+    if (isOffline) {
+      showOfflineToast();
+      return;
+    }
     setCreateDrawerDefaultStatus(status);
     setIsCreateDrawerOpen(true);
   };
@@ -30,7 +71,7 @@ const WorkspaceLayout = () => {
   };
 
   return (
-    <div className="h-screen flex bg-[#F6F8FB] font-sans overflow-hidden">
+    <div className="h-screen flex bg-bgPrimary font-sans overflow-hidden">
       {/* Desktop Fixed Sidebar */}
       <Sidebar />
 
@@ -41,12 +82,14 @@ const WorkspaceLayout = () => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onCreateTaskClick={() => openCreateTaskDrawer('Pending')}
+          isOffline={isOffline}
+          showOfflineToast={showOfflineToast}
         />
 
         {/* Workspace content page view */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-8">
           <div className="max-w-7xl mx-auto w-full">
-            <Outlet context={{ searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer }} />
+            <Outlet context={{ searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast }} />
           </div>
         </main>
       </div>
@@ -63,6 +106,8 @@ const WorkspaceLayout = () => {
       <TaskDetailsDrawer
         isOpen={isDetailsOpen}
         taskId={selectedTaskId}
+        isOffline={isOffline}
+        showOfflineToast={showOfflineToast}
         onClose={() => {
           setIsDetailsOpen(false);
           setSelectedTaskId(null);

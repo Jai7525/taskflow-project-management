@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
 
@@ -15,10 +15,21 @@ const formatDateStr = (dateObj) => {
   return `${year}-${month}-${day}`;
 };
 
+/* ─── Shared nav button style ─────────────────────────────────────────────── */
+const NAV_BTN =
+  'h-11 w-11 rounded-full border border-[#E2E8F0] bg-white text-slate-500 ' +
+  'flex items-center justify-center shrink-0 cursor-pointer ' +
+  'hover:bg-[#F8FAFC] hover:border-[#CBD5E1] hover:shadow-sm ' +
+  'active:bg-slate-100 transition-all duration-150 focus:outline-none ' +
+  'focus:ring-2 focus:ring-[#6366F1]/20 disabled:opacity-40 disabled:cursor-default';
+
 /**
  * Dynamic Task Timeline Date Rail (Phase 8C).
  * Automatically calculates today, aggregates counts from backend tasks,
  * and navigates in steps of exactly 7 days.
+ *
+ * Polish pass: unified card states, smooth week slide, hover-lift,
+ * premium nav buttons, breathing-room padding, sentence-case counts.
  */
 const TaskTimeline = ({
   tasks = [],
@@ -26,6 +37,7 @@ const TaskTimeline = ({
   onSelectDate,
   error = null,
   onRetry,
+  isLoading = false,
 }) => {
   // Calendar viewport starts centered around today
   const today = useMemo(() => new Date(), []);
@@ -38,6 +50,24 @@ const TaskTimeline = ({
     return d;
   });
 
+  // Track slide direction for animated week transitions
+  const [slideDir, setSlideDir] = useState('next'); // 'next' | 'prev'
+
+  // Stable key for AnimatePresence — changes only when anchorDate changes
+  const anchorKey = formatDateStr(anchorDate);
+
+  // Synchronize anchorDate viewport when selectedDate changes (e.g. via calendar pick or external reset)
+  useEffect(() => {
+    if (selectedDate) {
+      const parsed = new Date(selectedDate + 'T00:00:00');
+      if (!isNaN(parsed.getTime())) {
+        const d = new Date(parsed);
+        d.setDate(parsed.getDate() - 3); // center around the date
+        setAnchorDate(d);
+      }
+    }
+  }, [selectedDate]);
+
   // Generate 7 consecutive days starting from anchorDate
   const timelineDays = useMemo(() => {
     const days = [];
@@ -45,7 +75,7 @@ const TaskTimeline = ({
       const d = new Date(anchorDate);
       d.setDate(anchorDate.getDate() + i);
       const dateStr = formatDateStr(d);
-      
+
       days.push({
         dateStr,
         dayName: DAYS_OF_WEEK[d.getDay()],
@@ -58,8 +88,17 @@ const TaskTimeline = ({
     return days;
   }, [anchorDate, todayStr]);
 
-  // Viewport navigation
+  // Aggregate total tasks count currently visible in this 7-day timeline view
+  const totalTasksInTimeline = useMemo(() => {
+    return timelineDays.reduce((acc, day) => {
+      const dayTasksCount = tasks.filter((t) => t.dueDate && t.dueDate.startsWith(day.dateStr)).length;
+      return acc + dayTasksCount;
+    }, 0);
+  }, [timelineDays, tasks]);
+
+  // Viewport navigation — set direction before updating anchor so AnimatePresence reads correct dir
   const handlePrevWeek = () => {
+    setSlideDir('prev');
     setAnchorDate((prev) => {
       const newD = new Date(prev);
       newD.setDate(prev.getDate() - 7);
@@ -68,6 +107,7 @@ const TaskTimeline = ({
   };
 
   const handleNextWeek = () => {
+    setSlideDir('next');
     setAnchorDate((prev) => {
       const newD = new Date(prev);
       newD.setDate(prev.getDate() + 7);
@@ -76,18 +116,46 @@ const TaskTimeline = ({
   };
 
   const handleResetToToday = () => {
+    setSlideDir('next');
     const d = new Date(today);
     d.setDate(today.getDate() - 3);
     setAnchorDate(d);
     onSelectDate(todayStr);
   };
 
+  /* ─── Week slide animation variants ──────────────────────────────────────── */
+  const slideVariants = {
+    enter: (dir) => ({
+      opacity: 0,
+      x: dir === 'next' ? 36 : -36,
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: (dir) => ({
+      opacity: 0,
+      x: dir === 'next' ? -36 : 36,
+    }),
+  };
+
+  /* ─── Error state ─────────────────────────────────────────────────────────── */
   if (error) {
+    const isOffline = error.toLowerCase().includes('offline');
     return (
       <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 w-full h-[132px] select-none">
-        <div className="flex items-center space-x-3">
-          <AlertCircle className="h-5 w-5 text-red-500" />
-          <span className="text-sm font-bold text-slate-800">Unable to load timeline</span>
+        <div className="flex items-center space-x-3.5">
+          <div className="h-9 w-9 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-800 font-sans">
+              {isOffline ? "You're offline." : 'Unable to load timeline'}
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5 font-medium">
+              {isOffline ? 'Check your connection.' : 'Please try again later.'}
+            </p>
+          </div>
         </div>
         {onRetry && (
           <button
@@ -101,132 +169,236 @@ const TaskTimeline = ({
     );
   }
 
+  /* ─── Main render ─────────────────────────────────────────────────────────── */
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
-      {/* Header controls */}
+    <div className="bg-white border border-[#E5E7EB] rounded-[16px] px-6 pt-7 pb-7 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-5 select-none">
+
+      {/* ── Header ── */}
       <div className="flex items-center justify-between">
-        <h2 className="text-[18px] font-bold text-[#111827] tracking-tight font-sans">
+        <h2 className="text-[18px] font-bold text-slate-800 tracking-tight font-sans">
           Task Timeline
         </h2>
-        <div className="flex items-center space-x-2">
+
+        {/* Calendar date-picker button — matches nav button group */}
+        <div className="relative">
           <button
-            onClick={handleResetToToday}
-            className="px-3.5 py-1.5 border border-[#E5E7EB] rounded-xl text-xs font-bold text-[#111827] bg-[#F6F8FB] hover:bg-slate-50 cursor-pointer transition"
+            className={NAV_BTN}
+            aria-label="Pick a date"
+            tabIndex={0}
           >
-            Today
+            <Calendar className="h-5 w-5" />
           </button>
-          <button className="p-1.5 border border-[#E5E7EB] rounded-xl text-slate-400 cursor-not-allowed bg-white">
-            <Calendar className="h-4.5 w-4.5" />
-          </button>
+          <input
+            type="date"
+            value={selectedDate || ''}
+            onChange={(e) => {
+              if (e.target.value) {
+                onSelectDate(e.target.value);
+              }
+            }}
+            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            aria-label="Choose timeline start date"
+          />
         </div>
       </div>
 
-      {/* Date Rail with Left/Right Navigations */}
-      <div className="relative flex items-center justify-between gap-2">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+      {/* ── Date Rail ── */}
+      <div className="flex items-center gap-3">
+
+        {/* Prev arrow */}
+        <button
           onClick={handlePrevWeek}
-          className="p-2 border border-[#E5E7EB] rounded-full hover:bg-slate-50 text-slate-500 hover:text-slate-800 shrink-0 cursor-pointer transition shadow-soft-sm"
+          className={NAV_BTN}
           aria-label="Previous 7 Days"
         >
-          <ChevronLeft className="h-4 w-4" />
-        </motion.button>
+          <ChevronLeft className="h-5 w-5" />
+        </button>
 
-        {/* Responsive viewport layout: Desktop shows 7, Tablet shows 5 (via tailwind hidden/block), Mobile swiping */}
-        <div className="flex-1 flex justify-between items-stretch px-2 pt-2.5 pb-1 overflow-x-auto scrollbar-none space-x-2 md:space-x-3 lg:space-x-4">
-          {timelineDays.map((day, idx) => {
-            const isSelected = selectedDate === day.dateStr;
-            
-            // Calculate total tasks due this day from backend tasks
-            const dayTasks = tasks.filter((t) => t.dueDate && t.dueDate.startsWith(day.dateStr));
-            const count = dayTasks.length;
-
-            const hasPending = dayTasks.some((t) => t.status === 'Pending');
-            const hasProgress = dayTasks.some((t) => t.status === 'In Progress');
-            const hasCompleted = dayTasks.some((t) => t.status === 'Completed');
-
-            // Hide last 2 items on tablet (idx >= 5) to show exactly 5 days
-            const responsivenessClass = idx >= 5 ? 'hidden lg:flex' : 'flex';
-
-            // Styles based on state:
-            // 1. Today + Selected: isToday && isSelected
-            // 2. Today (Not Selected): isToday && !isSelected
-            // 3. Selected (Not Today): !isToday && isSelected
-            // 4. Normal: !isToday && !isSelected
-            let cardBgClass = '';
-            let dayNameColorClass = 'text-slate-450';
-            let dayNumColorClass = 'text-slate-800';
-            let countColorClass = 'text-slate-450';
-
-            if (isSelected) {
-              cardBgClass = 'bg-[#111827] text-white border-[#111827] shadow-md z-10';
-              dayNameColorClass = 'text-slate-400';
-              dayNumColorClass = 'text-white';
-              countColorClass = 'text-slate-350';
-            } else if (day.isToday) {
-              cardBgClass = 'bg-white border-[#6366F1] ring-2 ring-[#6366F1]/10 z-10';
-              dayNameColorClass = 'text-slate-450';
-              dayNumColorClass = 'text-slate-800';
-              countColorClass = 'text-slate-450';
-            } else {
-              cardBgClass = 'bg-white border-[#E5E7EB] hover:border-slate-350';
-              dayNameColorClass = 'text-slate-450';
-              dayNumColorClass = 'text-slate-800';
-              countColorClass = 'text-slate-450';
-            }
-
-            return (
-              <motion.button
-                whileHover={{ y: -2, scale: 1.01 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                key={day.dateStr}
-                onClick={() => onSelectDate(isSelected ? null : day.dateStr)}
-                className={`${responsivenessClass} flex-1 min-w-[95px] sm:min-w-[110px] md:min-w-[125px] flex-col items-center justify-center p-3.5 rounded-[16px] border text-center transition-all cursor-pointer relative ${cardBgClass}`}
+        {/* ── Cards viewport ── */}
+        {/* overflow-visible is required so the TODAY badge (absolutely positioned above cards) is never clipped */}
+        <div className="flex-1 overflow-visible relative" style={{ minHeight: '124px' }}>
+          {isLoading ? (
+            /* Skeleton loader */
+            <div className="flex items-stretch gap-6">
+              {Array.from({ length: 7 }).map((_, idx) => {
+                const hidden = idx >= 5 ? 'hidden lg:flex' : 'flex';
+                return (
+                  <div
+                    key={idx}
+                    className={`${hidden} flex-1 flex-col items-center justify-center p-3.5 rounded-[14px] border border-slate-100 bg-white text-center animate-pulse h-[110px]`}
+                  >
+                    <div className="h-3 bg-slate-100 rounded w-8 mb-2" />
+                    <div className="h-5 bg-slate-200/60 rounded w-14 mb-3" />
+                    <div className="h-1.5 bg-slate-100 rounded w-6 mb-2" />
+                    <div className="h-2.5 bg-slate-100 rounded w-10" />
+                  </div>
+                );
+              })}
+            </div>
+          ) : totalTasksInTimeline === 0 ? (
+            /* Empty state */
+            <AnimatePresence mode="wait" custom={slideDir}>
+              <motion.div
+                key={anchorKey + '-empty'}
+                custom={slideDir}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="flex items-center justify-center border border-dashed border-[#E5E7EB] rounded-[14px] bg-slate-50/50 h-[110px] w-full"
               >
-                {/* TODAY badge */}
-                {day.isToday && (
-                  <span className="absolute -top-1.5 bg-[#6366F1] text-white text-[8px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full">
-                    Today
-                  </span>
-                )}
-
-                {/* Day Name */}
-                <span className={`text-[12px] font-semibold ${dayNameColorClass}`}>
-                  {day.dayName}
-                </span>
-
-                {/* Day Number + Month */}
-                <span className={`text-[16px] sm:text-[18px] font-extrabold mt-0.5 leading-none ${dayNumColorClass}`}>
-                  {day.dayNum} {day.monthName}
-                </span>
-
-                {/* Status Dot Indicators */}
-                <div className="flex space-x-1 mt-2.5 h-1.5 items-center justify-center">
-                  {hasPending && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
-                  {hasProgress && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
-                  {hasCompleted && <span className="h-1.5 w-1.5 rounded-full bg-green-500" />}
-                  {count === 0 && <span className="h-1 w-1 rounded-full bg-slate-200" />}
+                <div className="flex flex-col items-center">
+                  <Calendar className="h-5 w-5 text-slate-400 mb-1.5" />
+                  <span className="text-xs font-semibold text-slate-400">No upcoming tasks</span>
                 </div>
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            /* ── Animated week rail ── */
+            <AnimatePresence mode="wait" custom={slideDir}>
+              <motion.div
+                key={anchorKey}
+                custom={slideDir}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="flex items-stretch gap-6 pt-4"
+              >
+                {timelineDays.map((day, idx) => {
+                  const isSelected = selectedDate === day.dateStr;
 
-                {/* Task Count descriptor */}
-                <span className={`text-[10px] font-bold mt-2 ${countColorClass}`}>
-                  {count === 0 ? '0 Tasks' : `${count} ${count === 1 ? 'Task' : 'Tasks'}`}
-                </span>
-              </motion.button>
-            );
-          })}
+                  // Task data for this day
+                  const dayTasks = tasks.filter((t) => t.dueDate && t.dueDate.startsWith(day.dateStr));
+                  const count = dayTasks.length;
+                  const hasPending  = dayTasks.some((t) => t.status === 'Pending');
+                  const hasProgress = dayTasks.some((t) => t.status === 'In Progress');
+                  const hasCompleted = dayTasks.some((t) => t.status === 'Completed');
+
+                  // Responsive visibility: hide last 2 on screens < lg
+                  const hidden = idx >= 5 ? 'hidden lg:flex' : 'flex';
+
+                  /* ── Card visual state tokens ── */
+                  let cardBase = '';
+                  let dayNameColor = '';
+                  let dayNumColor = '';
+                  let countColor = '';
+                  let hoverStyle = {};
+
+                  if (isSelected) {
+                    // Restored: gradient fill, 24px radius, premium shadow
+                    cardBase =
+                      'bg-gradient-to-b from-[#6366F1] to-[#4F46E5] rounded-[24px] ' +
+                      'border-transparent ' +
+                      'shadow-[0_10px_24px_rgba(99,102,241,.16)] z-10';
+                    dayNameColor = 'text-indigo-200';
+                    dayNumColor  = 'text-white';
+                    countColor   = 'text-indigo-200';
+                    // No hover lift on selected
+                    hoverStyle = {};
+                  } else if (day.isToday) {
+                    // Today unselected — white bg, primary border
+                    cardBase =
+                      'bg-white border-[#6366F1] shadow-[0_0_0_3px_rgba(99,102,241,0.08)]';
+                    dayNameColor = 'text-slate-500';
+                    dayNumColor  = 'text-slate-800';
+                    countColor   = 'text-slate-400';
+                    hoverStyle = {};
+                  } else {
+                    // Default unselected
+                    cardBase = 'bg-white border-[#E5E7EB]';
+                    dayNameColor = 'text-slate-500';
+                    dayNumColor  = 'text-slate-800';
+                    countColor   = 'text-slate-400';
+                    hoverStyle = {};
+                  }
+
+                  return (
+                    <motion.button
+                      key={day.dateStr}
+                      onClick={() => onSelectDate(isSelected ? null : day.dateStr)}
+                      whileHover={!isSelected ? { y: -2 } : {}}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className={
+                        `${hidden} flex-1 flex-col items-center justify-center ` +
+                        `p-3.5 border h-[110px] ` +
+                        /* radius: selected gets 24px (set in cardBase), others 14px */
+                        (!isSelected ? 'rounded-[14px] ' : '') +
+                        `text-center cursor-pointer relative ` +
+                        `transition-[border-color,box-shadow,background-color,border-radius] duration-[180ms] ease-out ` +
+                        `focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 ` +
+                        (!isSelected && !day.isToday
+                          ? 'hover:border-[#CBD5E1] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] '
+                          : '') +
+                        cardBase
+                      }
+                      aria-pressed={isSelected}
+                      aria-label={`${day.dayName} ${day.dayNum} ${day.monthName}${day.isToday ? ', today' : ''}, ${count} ${count === 1 ? 'task' : 'tasks'}`}
+                    >
+                      {/* TODAY badge — #4338CA, positioned to sit naturally on the card */}
+                      {day.isToday && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-6px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: '#4338CA',
+                            color: '#FFFFFF',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            letterSpacing: '0.03em',
+                            borderRadius: '999px',
+                            padding: '2px 10px',
+                            whiteSpace: 'nowrap',
+                            boxShadow: '0 4px 12px rgba(67,56,202,.18)',
+                          }}
+                        >
+                          TODAY
+                        </span>
+                      )}
+
+                      {/* Day name */}
+                      <span className={`text-[11px] font-semibold tracking-wide ${dayNameColor}`}>
+                        {day.dayName}
+                      </span>
+
+                      {/* Day number + Month */}
+                      <span className={`text-[17px] font-extrabold mt-0.5 leading-none ${dayNumColor}`}>
+                        {day.dayNum}{' '}
+                        <span className="text-[13px] font-bold">{day.monthName}</span>
+                      </span>
+
+                      {/* Status dot indicators — 6px, 8px gap, always canonical status colors */}
+                      <div className="flex gap-2 mt-2.5 items-center justify-center" style={{ height: '6px' }}>
+                        {hasPending   && <span className="h-[6px] w-[6px] rounded-full bg-amber-400" />}
+                        {hasProgress  && <span className="h-[6px] w-[6px] rounded-full bg-blue-400" />}
+                        {hasCompleted && <span className="h-[6px] w-[6px] rounded-full bg-emerald-400" />}
+                        {count === 0  && <span className="h-[4px] w-[4px] rounded-full bg-slate-300" />}
+                      </div>
+
+                      {/* Task count — sentence case */}
+                      <span className={`text-[10px] font-semibold mt-2 ${countColor}`}>
+                        {count === 0 ? '0 tasks' : `${count} ${count === 1 ? 'task' : 'tasks'}`}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        {/* Next arrow */}
+        <button
           onClick={handleNextWeek}
-          className="p-2 border border-[#E5E7EB] rounded-full hover:bg-slate-50 text-slate-500 hover:text-slate-800 shrink-0 cursor-pointer transition shadow-soft-sm"
+          className={NAV_BTN}
           aria-label="Next 7 Days"
         >
-          <ChevronRight className="h-4 w-4" />
-        </motion.button>
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );

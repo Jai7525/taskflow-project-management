@@ -26,7 +26,7 @@ const getStatusVariant = (status) => {
  * Orchestrates details fetching, read-only vs edit toggles, loading spin states,
  * backdrop outside-clicks, escape key bindings, dirty checks, and delete confirmations.
  */
-const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
+const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = false, showOfflineToast }) => {
   const [task, setTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -166,14 +166,12 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
     if (loading || fetchError) {
       return (
         <div className="p-6 border-t border-slate-100 flex items-center justify-end">
-          <motionDiv.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold transition cursor-pointer"
+            className="px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 active:bg-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
           >
             Close
-          </motionDiv.button>
+          </button>
         </div>
       );
     }
@@ -186,10 +184,10 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="border-t border-slate-200 bg-red-50/10 py-3 px-4.5 space-y-3 shrink-0 overflow-hidden"
+          className="border-t border-slate-200 bg-red-50/10 py-3 px-5 space-y-3 shrink-0 overflow-hidden"
         >
           <div className="flex items-start space-x-2.5">
-            <div className="h-8 w-8 rounded-xl bg-red-50/50 border border-red-100/60 flex items-center justify-center text-red-600 shrink-0">
+            <div className="h-8 w-8 rounded-xl bg-red-50 border border-red-100/60 flex items-center justify-center text-red-650 shrink-0">
               <AlertCircle className="h-4.5 w-4.5" />
             </div>
             <div className="space-y-0.5">
@@ -203,27 +201,23 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
           </div>
 
           <div className="flex items-center justify-end space-x-3 pt-1">
-            <motionDiv.button
-              whileHover={{ scale: isDeleting ? 1 : 1.02 }}
-              whileTap={{ scale: isDeleting ? 1 : 0.98 }}
+            <button
               type="button"
               disabled={isDeleting}
               onClick={() => setShowDeleteConfirm(false)}
-              className="px-4.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40"
+              className="px-5 py-2 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40"
             >
               Cancel
-            </motionDiv.button>
-            <motionDiv.button
-              whileHover={{ scale: isDeleting ? 1 : 1.02 }}
-              whileTap={{ scale: isDeleting ? 1 : 0.98 }}
+            </button>
+            <button
               type="button"
               disabled={isDeleting}
               onClick={handleDeleteConfirm}
-              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(220,38,38,0.15)] cursor-pointer disabled:opacity-75 flex items-center space-x-1.5"
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(220,38,38,0.15)] cursor-pointer disabled:opacity-75 flex items-center space-x-1.5"
             >
               {isDeleting && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
               <span>{isDeleting ? 'Deleting...' : 'Delete Permanently'}</span>
-            </motionDiv.button>
+            </button>
           </div>
         </motionDiv>
       );
@@ -239,9 +233,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
           transition={{ duration: 0.18 }}
           className="p-6 border-t border-slate-100 flex items-center justify-end space-x-3 shrink-0"
         >
-          <motionDiv.button
-            whileHover={{ scale: isSaving ? 1 : 1.02 }}
-            whileTap={{ scale: isSaving ? 1 : 0.98 }}
+          <button
             type="button"
             onClick={() => {
               setIsEditing(false);
@@ -249,21 +241,23 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
               setApiError(null);
             }}
             disabled={isSaving}
-            className="px-4.5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40"
+            className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40"
           >
             Cancel
-          </motionDiv.button>
-          <motionDiv.button
-            whileHover={{ scale: (isSaving || !isDirty()) ? 1 : 1.02 }}
-            whileTap={{ scale: (isSaving || !isDirty()) ? 1 : 0.98 }}
-            type="submit"
-            form="edit-task-form"
-            disabled={isSaving || !isDirty()}
-            className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5"
+          </button>
+          <button
+            type={isOffline ? "button" : "submit"}
+            form={isOffline ? undefined : "edit-task-form"}
+            onClick={isOffline ? showOfflineToast : undefined}
+            disabled={isSaving || (!isOffline && !isDirty())}
+            title={isOffline ? "Requires an internet connection" : "Save Changes"}
+            className={`px-5 py-2.5 bg-[#6366F1] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] flex items-center space-x-1.5 ${
+              isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#5053de] active:bg-[#4043ce] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+            }`}
           >
             {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
-          </motionDiv.button>
+          </button>
         </motionDiv>
       );
     }
@@ -277,22 +271,21 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
         transition={{ duration: 0.18 }}
         className="p-6 border-t border-slate-100 flex items-center justify-between shrink-0"
       >
-        <motionDiv.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           type="button"
-          onClick={() => setShowDeleteConfirm(true)}
-          className="px-4.5 py-2.5 bg-red-50 hover:bg-red-100/70 border border-red-200 text-red-750 rounded-xl text-sm font-semibold transition cursor-pointer"
+          onClick={isOffline ? showOfflineToast : () => setShowDeleteConfirm(true)}
+          title={isOffline ? "Requires an internet connection" : "Delete task"}
+          className={`px-5 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm font-semibold transition ${
+            isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100/70 active:bg-red-200/50 cursor-pointer'
+          }`}
         >
           Delete Task
-        </motionDiv.button>
+        </button>
 
         <div className="flex items-center space-x-3">
-          <motionDiv.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             type="button"
-            onClick={() => {
+            onClick={isOffline ? showOfflineToast : () => {
               setIsEditing(true);
               setEditData({
                 title: task.title,
@@ -302,19 +295,20 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
                 dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
               });
             }}
-            className="px-4.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-750 rounded-xl text-sm font-semibold transition cursor-pointer"
+            title={isOffline ? "Requires an internet connection" : "Edit task"}
+            className={`px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition ${
+              isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 active:bg-slate-100 cursor-pointer'
+            }`}
           >
             Edit Task
-          </motionDiv.button>
-          <motionDiv.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          </button>
+          <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer"
+            className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] active:bg-[#4043ce] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer"
           >
             Close
-          </motionDiv.button>
+          </button>
         </div>
       </motionDiv>
     );
@@ -338,9 +332,9 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
 
           {/* Drawer Panel Container (Slide from right transition) */}
           <motionDiv
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             role="dialog"
             aria-modal="true"
@@ -359,7 +353,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-505 mt-0.5">
                   {isEditing ? 'Editing task properties' : 'View task configurations'}
                 </p>
               </div>
@@ -378,10 +372,10 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate }) => {
               <TaskDetailsSkeleton />
             ) : fetchError ? (
               <div className="flex-1 p-6 flex flex-col items-center justify-center space-y-3.5 text-center">
-                <AlertCircle className="h-9 w-9 text-red-500" />
+                <AlertCircle className="h-9 w-9 text-red-555" />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-[#111827]">Unable to load task</h3>
-                  <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  <p className="text-xs text-slate-505 max-w-xs mx-auto">
                     There was an issue fetching details from the database. Please try again.
                   </p>
                 </div>

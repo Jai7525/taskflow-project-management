@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Calendar, MoreHorizontal, AlertCircle } from 'lucide-react';
+import { Plus, Calendar, AlertCircle, ClipboardList } from 'lucide-react';
 import WorkspaceHeader from '../../components/workspace/WorkspaceHeader';
 import TodayFocus from '../../components/workspace/TodayFocus';
 import TaskTimeline from '../../components/workspace/TaskTimeline';
@@ -14,12 +14,21 @@ import taskService from '../../services/taskService';
 import RecentActivity from '../../components/workspace/RecentActivity';
 import { toast } from 'react-hot-toast';
 
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.04,
+    }
+  }
+};
+
 /**
  * Enterprise Workspace Page.
  * Coordinates dynamic Task Timeline with dynamic task board columns for Phase 8D.
  */
 const WorkspacePage = () => {
-  const { searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer } = useOutletContext();
+  const { searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast } = useOutletContext();
   const [debouncedSearch, setDebouncedSearch] = useState('');
   
   // Timeline tasks for calendar indicators (max limit 150)
@@ -44,12 +53,18 @@ const WorkspacePage = () => {
   // Loading & Error States
   const [loading, setLoading] = useState(true);
   const [timelineLoading, setTimelineLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [boardError, setBoardError] = useState(null);
+  const [timelineError, setTimelineError] = useState(null);
 
   // Activity Log States (Phase 8H)
   const [activities, setActivities] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
   const [activityError, setActivityError] = useState(null);
+
+  // Refs to track successful initial data loads (avoids dependency array recursion loops)
+  const hasLoadedTimeline = useRef(false);
+  const hasLoadedBoard = useRef(false);
+  const hasLoadedActivity = useRef(false);
 
   const sortOptions = [
     { label: 'Newest First', value: 'latest' },
@@ -71,14 +86,26 @@ const WorkspacePage = () => {
 
   // Fetch all tasks for due-date timeline calculations
   const fetchTimelineTasks = useCallback(async (searchVal) => {
+    if (!navigator.onLine && hasLoadedTimeline.current) {
+      setTimelineLoading(false);
+      return;
+    }
     setTimelineLoading(true);
+    setTimelineError(null);
     try {
       const response = await taskService.getTasks({ limit: 150, search: searchVal });
       if (response?.success) {
         setTimelineTasks(response.data.tasks || []);
+        hasLoadedTimeline.current = true;
+      } else {
+        setTimelineError("Unable to load timeline");
       }
     } catch (err) {
-      console.error('Failed to load timeline tasks', err);
+      if (!navigator.onLine && hasLoadedTimeline.current) {
+        // Do not override loaded data
+      } else {
+        setTimelineError(!navigator.onLine ? "You're offline. Check your connection." : "Unable to load timeline");
+      }
     } finally {
       setTimelineLoading(false);
     }
@@ -86,8 +113,12 @@ const WorkspacePage = () => {
 
   // Fetch Board Tasks based on filter parameters
   const fetchBoardTasks = useCallback(async (page, status, search, sort) => {
+    if (!navigator.onLine && hasLoadedBoard.current) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    setError(null);
+    setBoardError(null);
     try {
       const params = {
         page,
@@ -101,11 +132,16 @@ const WorkspacePage = () => {
       if (response?.success) {
         setBoardTasks(response.data.tasks || []);
         setPaginationData(response.data.pagination || null);
+        hasLoadedBoard.current = true;
       } else {
-        setError('Unable to load tasks');
+        setBoardError('Unable to load tasks');
       }
     } catch (err) {
-      setError('Unable to load tasks');
+      if (!navigator.onLine && hasLoadedBoard.current) {
+        // Do not override loaded data
+      } else {
+        setBoardError(!navigator.onLine ? "You're offline. Check your connection." : 'Unable to load tasks');
+      }
     } finally {
       setLoading(false);
     }
@@ -113,17 +149,26 @@ const WorkspacePage = () => {
 
   // Fetch Recent Activity Logs (Phase 8H)
   const fetchRecentActivity = useCallback(async () => {
+    if (!navigator.onLine && hasLoadedActivity.current) {
+      setActivityLoading(false);
+      return;
+    }
     setActivityLoading(true);
     setActivityError(null);
     try {
       const response = await taskService.getRecentActivity();
       if (response?.success) {
         setActivities(response.data || []);
+        hasLoadedActivity.current = true;
       } else {
         setActivityError('Unable to load activity');
       }
     } catch (err) {
-      setActivityError('Unable to load activity');
+      if (!navigator.onLine && hasLoadedActivity.current) {
+        // Do not override loaded data
+      } else {
+        setActivityError(!navigator.onLine ? "You're offline. Check your connection." : 'Unable to load activity');
+      }
     } finally {
       setActivityLoading(false);
     }
@@ -183,7 +228,7 @@ const WorkspacePage = () => {
   const completedTasks = filteredTasks.filter((t) => t.status === 'Completed');
 
   // Helper to render skeleton loaders or tasks inside columns
-  const renderColumnContent = (columnTasks, emptyText) => {
+  const renderColumnContent = (columnTasks, emptyText, status) => {
     if (loading) {
       return (
         <div className="space-y-3">
@@ -194,25 +239,80 @@ const WorkspacePage = () => {
     }
 
     if (columnTasks.length === 0) {
+      if (status === 'Pending') {
+        return (
+          <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-[#E5E7EB] rounded-[16px] bg-white/50 text-slate-400 space-y-2.5 text-center min-h-[160px] select-none">
+            <div className="h-10 w-10 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100/60 shadow-sm mx-auto">
+              <ClipboardList className="h-5 w-5 text-slate-400" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-800 font-sans">No pending tasks</p>
+              <p className="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[200px]">
+                Create your first task to get started.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
       return (
-        <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-[#E5E7EB] rounded-[12px] bg-white/50 text-slate-400 space-y-1 text-center">
+        <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-[#E5E7EB] rounded-[16px] bg-white/50 text-slate-400 space-y-1 text-center min-h-[160px] select-none">
           <span className="text-xs font-bold text-slate-500">{emptyText}</span>
-          <span className="text-[10px] text-slate-400">No tasks yet</span>
+          <span className="text-[10px] text-slate-400 font-medium">No tasks yet</span>
         </div>
       );
     }
 
     return (
-      <div className="space-y-3">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-3"
+      >
         {columnTasks.map((task) => (
           <TaskCard key={task.id} task={task} onClick={handleCardClick} />
         ))}
-      </div>
+      </motion.div>
     );
   };
 
   return (
-    <div className="space-y-8 pb-10 w-full overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="space-y-8 pb-10 w-full overflow-hidden"
+    >
+      {/* ── Persistent Offline Warning Banner ── */}
+      {isOffline && (
+        <div className="bg-amber-50 border border-amber-250 rounded-[16px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-4 w-full select-none transition-all">
+          <div className="flex items-center space-x-3.5">
+            <div className="h-9 w-9 rounded-xl bg-amber-100/60 border border-amber-200/50 flex items-center justify-center text-amber-700 shrink-0">
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800 font-sans">You're offline</p>
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">Some information may be outdated.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              if (navigator.onLine) {
+                window.dispatchEvent(new Event('online'));
+              } else {
+                toast.error("Still offline. Please check your connection.", {
+                  id: "offline-action-prevented",
+                  duration: 2000,
+                });
+              }
+            }}
+            className="flex items-center space-x-1.5 px-4.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-sm"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       
       {/* ── Page Header Greeting ── */}
       <WorkspaceHeader />
@@ -225,7 +325,8 @@ const WorkspacePage = () => {
         tasks={timelineTasks}
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
-        error={error && timelineTasks.length === 0 ? 'Unable to load timeline' : null}
+        error={timelineError}
+        isLoading={timelineLoading}
         onRetry={() => fetchTimelineTasks(debouncedSearch)}
       />
 
@@ -250,14 +351,20 @@ const WorkspacePage = () => {
             </div>
           </div>
 
-          {error ? (
-            <div className="bg-red-50 border border-red-200 rounded-[16px] p-6 flex flex-col items-center justify-center space-y-3.5 w-full min-h-[250px] text-center">
-              <AlertCircle className="h-9 w-9 text-red-500" />
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-[#111827]">Unable to load tasks</h3>
-                <p className="text-xs text-slate-500 max-w-sm">
-                  There was an issue fetching tasks from the backend database. Please try again.
-                </p>
+          {boardError ? (
+            <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 w-full h-auto sm:h-[132px] select-none shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+              <div className="flex items-center space-x-3.5">
+                <div className="h-9 w-9 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center text-red-650 shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 font-sans">
+                    {boardError.toLowerCase().includes("offline") ? "You're offline." : "Unable to load tasks"}
+                  </p>
+                  <p className="text-xs text-slate-450 mt-0.5 font-medium">
+                    {boardError.toLowerCase().includes("offline") ? "Check your connection." : "Please try again later."}
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => fetchBoardTasks(currentPage, activeStatus, debouncedSearch, sortOrder)}
@@ -266,89 +373,101 @@ const WorkspacePage = () => {
                 Retry
               </button>
             </div>
+          ) : !loading && boardTasks.length === 0 && debouncedSearch ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[#E5E7EB] rounded-[24px] bg-[#F8FAFC] text-center w-full min-h-[250px] select-none">
+              <span className="text-3xl mb-3">🔍</span>
+              <h3 className="text-sm font-bold text-[#111827] font-sans">No matching tasks found</h3>
+              <p className="text-xs text-slate-400 font-medium mt-1">Try another keyword.</p>
+            </div>
           ) : (
             <>
               {/* Board 3-Columns Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 
                 {/* Column 1: Pending */}
-                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
+                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[20px] p-4 flex flex-col space-y-4 transition-colors duration-[150ms] hover:border-slate-350">
                   <div className="flex items-center justify-between px-1">
                     <div className="flex items-center space-x-2">
                       <span className="h-2 w-2 rounded-full bg-amber-500" />
-                      <span className="font-bold text-sm text-[#111827] font-sans">Pending</span>
-                      <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
-                        {pendingTasks.length}
+                      <span className="font-bold text-sm text-textPrimary font-sans">Pending</span>
+                      <span className="text-[11px] font-bold text-textSecondary bg-white border border-slate-200 px-1.5 py-0.2 rounded-md">
+                        {loading ? 0 : pendingTasks.length}
                       </span>
                     </div>
-                    <div className="flex space-x-1 text-slate-400">
+                    <div className="flex space-x-1 text-textMuted">
                       <button
-                        onClick={() => openCreateTaskDrawer('Pending')}
-                        title="Add Pending Task"
-                        className="p-0.5 hover:text-slate-700 cursor-pointer transition-colors duration-150"
+                        onClick={isOffline ? showOfflineToast : () => openCreateTaskDrawer('Pending')}
+                        title={isOffline ? "Requires an internet connection" : "Add Pending Task"}
+                        className={`p-0.5 transition-all ${
+                          isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:text-textPrimary cursor-pointer transition-colors duration-150'
+                        }`}
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
-                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
+
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                     {renderColumnContent(pendingTasks, 'No pending tasks')}
+                     {renderColumnContent(pendingTasks, 'No pending tasks', 'Pending')}
                   </div>
                 </div>
 
                 {/* Column 2: In Progress */}
-                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
+                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[20px] p-4 flex flex-col space-y-4 transition-colors duration-[150ms] hover:border-slate-350">
                   <div className="flex items-center justify-between px-1">
                     <div className="flex items-center space-x-2">
                       <span className="h-2 w-2 rounded-full bg-blue-500" />
-                      <span className="font-bold text-sm text-[#111827] font-sans">In Progress</span>
-                      <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
-                        {inProgressTasks.length}
+                      <span className="font-bold text-sm text-textPrimary font-sans">In Progress</span>
+                      <span className="text-[11px] font-bold text-textSecondary bg-white border border-slate-200 px-1.5 py-0.2 rounded-md">
+                        {loading ? 0 : inProgressTasks.length}
                       </span>
                     </div>
-                    <div className="flex space-x-1 text-slate-400">
+                    <div className="flex space-x-1 text-textMuted">
                       <button
-                        onClick={() => openCreateTaskDrawer('In Progress')}
-                        title="Add In Progress Task"
-                        className="p-0.5 hover:text-slate-700 cursor-pointer transition-colors duration-150"
+                        onClick={isOffline ? showOfflineToast : () => openCreateTaskDrawer('In Progress')}
+                        title={isOffline ? "Requires an internet connection" : "Add In Progress Task"}
+                        className={`p-0.5 transition-all ${
+                          isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:text-textPrimary cursor-pointer transition-colors duration-150'
+                        }`}
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
-                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
+
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    {renderColumnContent(inProgressTasks, 'No tasks in progress')}
+                    {renderColumnContent(inProgressTasks, 'No tasks in progress', 'In Progress')}
                   </div>
                 </div>
 
                 {/* Column 3: Completed */}
-                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[16px] p-4 flex flex-col space-y-4">
+                <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[20px] p-4 flex flex-col space-y-4 transition-colors duration-[150ms] hover:border-slate-350">
                   <div className="flex items-center justify-between px-1">
                     <div className="flex items-center space-x-2">
                       <span className="h-2 w-2 rounded-full bg-green-500" />
-                      <span className="font-bold text-sm text-[#111827] font-sans">Completed</span>
-                      <span className="text-[11px] font-bold text-slate-400 bg-white border border-[#E5E7EB] px-1.5 py-0.2 rounded-md">
-                        {completedTasks.length}
+                      <span className="font-bold text-sm text-textPrimary font-sans">Completed</span>
+                      <span className="text-[11px] font-bold text-textSecondary bg-white border border-slate-200 px-1.5 py-0.2 rounded-md">
+                        {loading ? 0 : completedTasks.length}
                       </span>
                     </div>
-                    <div className="flex space-x-1 text-slate-400">
+                    <div className="flex space-x-1 text-textMuted">
                       <button
-                        onClick={() => openCreateTaskDrawer('Completed')}
-                        title="Add Completed Task"
-                        className="p-0.5 hover:text-slate-700 cursor-pointer transition-colors duration-150"
+                        onClick={isOffline ? showOfflineToast : () => openCreateTaskDrawer('Completed')}
+                        title={isOffline ? "Requires an internet connection" : "Add Completed Task"}
+                        className={`p-0.5 transition-all ${
+                          isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:text-textPrimary cursor-pointer transition-colors duration-150'
+                        }`}
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
-                      <button className="p-0.5 hover:text-slate-700 cursor-not-allowed"><MoreHorizontal className="h-3.5 w-3.5" /></button>
+
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    {renderColumnContent(completedTasks, 'No completed tasks')}
+                    {renderColumnContent(completedTasks, 'No completed tasks', 'Completed')}
                   </div>
                 </div>
 
@@ -383,7 +502,7 @@ const WorkspacePage = () => {
         </div>
 
       </div>
-    </div>
+    </motion.div>
   );
 };
 

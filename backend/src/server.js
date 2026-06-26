@@ -13,6 +13,21 @@ const startServer = async () => {
   try {
     await sequelize.sync({ alter: true });
     console.log('Database tables synchronized successfully.');
+
+    // Seed demo admin user if not exists
+    const { User } = require('./models');
+    const demoEmail = 'admin@taskflow.com';
+    const existingDemoUser = await User.findOne({ where: { email: demoEmail } });
+    if (!existingDemoUser) {
+      const bcrypt = require('bcrypt');
+      const hashedPassword = await bcrypt.hash('Password123', 10);
+      await User.create({
+        name: 'Demo Admin',
+        email: demoEmail,
+        password: hashedPassword
+      });
+      console.log('Demo user seeded successfully.');
+    }
   } catch (error) {
     console.error('Database synchronization failed:', error.message);
   }

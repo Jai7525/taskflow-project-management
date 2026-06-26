@@ -7,6 +7,28 @@ export default {
   theme: {
     extend: {
       colors: {
+        bgPrimary: 'var(--bg-primary)',
+        bgSecondary: 'var(--bg-secondary)',
+        sidebar: 'var(--sidebar)',
+        topNav: 'var(--top-nav)',
+        card: 'var(--card)',
+        drawer: 'var(--drawer)',
+        inputBg: 'var(--input-bg)',
+        borderTheme: 'var(--border)',
+        borderInput: 'var(--border-input)',
+        textPrimary: 'var(--text-primary)',
+        textSecondary: 'var(--text-secondary)',
+        textMuted: 'var(--text-muted)',
+        textDisabled: 'var(--text-disabled)',
+        accent: 'var(--accent)',
+        accentHover: 'var(--accent-hover)',
+        accentActive: 'var(--accent-active)',
+        successTheme: 'var(--success)',
+        warningTheme: 'var(--warning)',
+        dangerTheme: 'var(--danger)',
+        dangerThemeHover: 'var(--danger-hover)',
+        hoverOverlay: 'var(--hover-overlay)',
+        activeOverlay: 'var(--active-overlay)',
         brand: {
           50: '#eef2ff',
           100: '#e0e7ff',

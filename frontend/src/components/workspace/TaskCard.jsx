@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
 import Badge from '../ui/Badge';
 import { formatDate } from '../../utils/formatDate';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Premium Task Card component conforming to Phase 8D visual guidelines.
@@ -10,8 +11,31 @@ import { formatDate } from '../../utils/formatDate';
  * progress bars (for In Progress tasks only), assignee profile pictures,
  * and Framer Motion hover/entry transitions.
  */
+const cardVariants = {
+  hidden: { opacity: 0, y: 8 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.22,
+      ease: 'easeOut',
+    }
+  }
+};
+
 const TaskCard = ({ task, onClick }) => {
+  const { user } = useAuth();
   const isCompleted = task.status === 'Completed';
+  
+  const userName = user?.name || 'Jayakumar M';
+  const initials = React.useMemo(() => {
+    if (!userName) return 'TU';
+    const parts = userName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }, [userName]);
 
   // Helper to determine priority badge variants matching color spec
   const getPriorityVariant = (priority) => {
@@ -40,12 +64,11 @@ const TaskCard = ({ task, onClick }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, scale: 1.01 }}
-      transition={{ duration: 0.22, ease: 'easeOut' }}
+      variants={cardVariants}
+      whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
       onClick={() => onClick && onClick(task.id)}
-      className={`bg-white border border-[#E5E7EB] rounded-[16px] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-shadow relative select-none cursor-pointer ${
+      className={`bg-white border border-slate-200 hover:border-slate-350 rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 relative select-none cursor-pointer ${
         isCompleted ? 'opacity-85' : ''
       }`}
     >
@@ -57,20 +80,20 @@ const TaskCard = ({ task, onClick }) => {
       )}
 
       {/* Task Title */}
-      <h4 className={`text-[14px] font-bold mt-2.5 text-[#111827] leading-snug font-sans ${
-        isCompleted ? 'line-through text-slate-400' : ''
+      <h4 className={`text-[14px] font-bold mt-2 text-textPrimary leading-snug font-sans ${
+        isCompleted ? 'line-through text-textDisabled' : ''
       }`}>
         {task.title}
       </h4>
 
       {/* Description truncated after 2 lines */}
-      <p className="text-[12px] text-slate-450 mt-1 leading-relaxed line-clamp-2">
+      <p className="text-[12px] text-textSecondary mt-1 leading-relaxed line-clamp-2">
         {task.description}
       </p>
 
       {/* Card Footer Info */}
       <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-50">
-        <span className="text-[10px] text-slate-400 font-semibold flex items-center space-x-1">
+        <span className="text-[10px] text-textMuted font-semibold flex items-center space-x-1">
           <Calendar className="h-3 w-3" />
           <span>{task.dueDate ? formatDate(task.dueDate) : 'No date'}</span>
         </span>
@@ -81,11 +104,9 @@ const TaskCard = ({ task, onClick }) => {
             {task.status}
           </Badge>
           
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-            alt="assignee"
-            className="h-6 w-6 rounded-full object-cover border border-white shadow-sm shrink-0"
-          />
+          <div className="h-6 w-6 rounded-full bg-[#6366F1] text-white font-bold flex items-center justify-center text-[9px] font-sans tracking-wide border border-white shadow-sm shrink-0">
+            {initials}
+          </div>
         </div>
       </div>
     </motion.div>

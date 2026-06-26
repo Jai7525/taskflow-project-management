@@ -5,13 +5,50 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg-primary: #F6F8FB;
+    --bg-secondary: #FFFFFF;
+    --sidebar: #111827;
+    --top-nav: #FFFFFF;
+    --card: #FFFFFF;
+    --drawer: #FFFFFF;
+    --input-bg: #F9FAFB;
+    --border: #E5E7EB;
+    --border-input: #E5E7EB;
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-muted: #9CA3AF;
+    --text-disabled: #D1D5DB;
+    
+    --accent: #6366F1;
+    --accent-hover: #4F46E5;
+    --accent-active: #4338CA;
+    
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --danger-hover: #DC2626;
+    --hover-overlay: rgba(0, 0, 0, 0.02);
+    --active-overlay: rgba(0, 0, 0, 0.04);
+  }
+
   html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    background-color: #F6F8FB;
+    background-color: var(--bg-primary);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #111827;
+    color: var(--text-primary);
+  }
+
+  /* Universal 200ms transition for theme colors */
+  html,
+  html *,
+  html *::before,
+  html *::after {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Universal Focus Ring rule for Accessibility */

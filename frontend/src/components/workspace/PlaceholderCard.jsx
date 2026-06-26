@@ -8,9 +8,9 @@ import { motion } from 'framer-motion';
 const PlaceholderCard = ({ title, children, className = '' }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       className={`bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] ${className}`}
     >
       {title && (

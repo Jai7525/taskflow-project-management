@@ -37,7 +37,7 @@ const Dropdown = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`bg-white border border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 text-sm font-semibold transition cursor-pointer flex items-center justify-between space-x-2 hover:bg-slate-50 focus:outline-none ${className}`}
+        className={`bg-white border border-slate-200 hover:border-slate-350 text-slate-700 rounded-xl px-4 py-2.5 text-sm font-semibold transition cursor-pointer flex items-center justify-between space-x-2 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] ${className}`}
       >
         <span>{selectedOption?.label}</span>
         <ChevronDown className="h-4 w-4 text-slate-400" />
@@ -46,10 +46,10 @@ const Dropdown = ({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-soft-lg z-20 py-1 overflow-hidden"
           >
             {options.map((opt) => (
@@ -61,7 +61,9 @@ const Dropdown = ({
                   setIsOpen(false);
                 }}
                 className={`w-full text-left px-4 py-2.5 text-sm font-medium transition hover:bg-slate-50 cursor-pointer ${
-                  opt.value === value ? 'text-brand-500 font-bold bg-brand-50/20' : 'text-slate-700'
+                  opt.value === value
+                    ? 'text-brand-500 font-bold bg-brand-50/20'
+                    : 'text-slate-700'
                 }`}
               >
                 {opt.label}
