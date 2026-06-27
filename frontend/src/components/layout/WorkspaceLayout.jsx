@@ -54,6 +54,44 @@ const WorkspaceLayout = () => {
     };
   }, []);
 
+  // Focus search input when pressing '/' on dashboard
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === '/') {
+        const active = document.activeElement;
+        if (active) {
+          const tag = active.tagName.toLowerCase();
+          if (tag === 'input' || tag === 'textarea' || tag === 'select' || active.isContentEditable) {
+            return;
+          }
+        }
+        if (isCreateDrawerOpen || isDetailsOpen) {
+          return;
+        }
+
+        e.preventDefault();
+
+        const searchInputs = document.querySelectorAll('input[placeholder="Search tasks..."]');
+        let visibleInput = null;
+        searchInputs.forEach((input) => {
+          if (input.offsetWidth > 0 || input.offsetHeight > 0) {
+            visibleInput = input;
+          }
+        });
+
+        if (visibleInput) {
+          visibleInput.focus();
+          visibleInput.select();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [isCreateDrawerOpen, isDetailsOpen]);
+
   // Deduplicated offline action warning toast helper
   const showOfflineToast = () => {
     toast.error("Internet connection required to perform this action.", {
@@ -160,8 +198,13 @@ const WorkspaceLayout = () => {
                 }
               }}
               placeholder="Search tasks..."
-              className="w-full pl-9 pr-4 py-2 bg-[#F6F8FB] border border-[#E5E7EB] rounded-xl text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/10 focus:border-[#6366F1] placeholder-slate-400 font-medium transition duration-150"
+              className="w-full pl-9 pr-10 py-2 bg-[#F6F8FB] border border-[#E5E7EB] rounded-xl text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/10 focus:border-[#6366F1] placeholder-slate-400 font-medium transition duration-150"
             />
+            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+              <span className="text-[10px] bg-white border border-[#E5E7EB] px-1.5 py-0.5 rounded text-slate-400 font-bold font-sans">
+                /
+              </span>
+            </div>
           </div>
         </div>
 

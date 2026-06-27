@@ -20,7 +20,7 @@ const FilterTabs = ({ activeStatus, onStatusChange }) => {
           <button
             key={tab.value}
             onClick={() => onStatusChange(tab.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer focus:outline-none shrink-0 ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]/30 shrink-0 ${
               isActive
                 ? 'bg-white text-brand-600 shadow-soft-sm font-semibold'
                 : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'

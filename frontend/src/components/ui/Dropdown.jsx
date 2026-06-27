@@ -25,6 +25,18 @@ const Dropdown = ({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const selectedOption = options.find((opt) => opt.value === value) || options[0];
 
   return (

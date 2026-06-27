@@ -72,8 +72,8 @@ const TopNavbar = ({
           className="w-full pl-10 pr-12 py-2.5 bg-[#F6F8FB] border border-[#E5E7EB] rounded-[12px] text-sm text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] placeholder-slate-400 font-medium transition duration-150"
         />
         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-          <span className="text-[10px] bg-white border border-[#E5E7EB] px-1.5 py-0.5 rounded text-slate-450 font-bold">
-            ⌘ K
+          <span className="text-[10px] bg-white border border-[#E5E7EB] px-1.5 py-0.5 rounded text-slate-400 font-bold font-sans">
+            /
           </span>
         </div>
       </div>

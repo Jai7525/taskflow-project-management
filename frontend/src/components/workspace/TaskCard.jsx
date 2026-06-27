@@ -67,8 +67,17 @@ const TaskCard = ({ task, onClick }) => {
       variants={cardVariants}
       whileHover={{ y: -2, scale: 1.01, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
+      tabIndex={0}
+      role="button"
+      aria-label={`View task details for ${task.title}`}
       onClick={() => onClick && onClick(task.id)}
-      className={`bg-white border border-slate-200 hover:border-slate-350 rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 relative select-none cursor-pointer ${
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick && onClick(task.id);
+        }
+      }}
+      className={`bg-white border border-slate-200 hover:border-slate-350 rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 relative select-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:outline-none ${
         isCompleted ? 'opacity-85' : ''
       }`}
     >
