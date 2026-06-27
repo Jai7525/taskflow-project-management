@@ -11,8 +11,11 @@ const sequelize = new Sequelize(database, username, password, {
   host: host,
   port: port,
   dialect: 'mysql',
+  // SQL query logging is useful during development but adds noise in production.
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {
+    // Keep the pool small since this is a single-user workspace app.
+    // Increase max if concurrent request load grows.
     max: 5,
     min: 0,
     acquire: 30000,
@@ -28,7 +31,8 @@ const mysql = require('mysql2/promise');
 
 const connectDatabase = async () => {
   try {
-    // Ensure DB exists before Sequelize connects to it
+    // Sequelize cannot create the database itself, so we establish a root-level connection first.
+    // This removes the manual setup step when deploying to a fresh environment.
     const connection = await mysql.createConnection({
       host: host,
       port: port,

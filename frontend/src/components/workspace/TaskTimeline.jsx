@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, AlertCircle } from 'lucide-react';
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -40,6 +40,7 @@ const TaskTimeline = ({
   // Calendar viewport starts centered around today
   const today = useMemo(() => new Date(), []);
   const todayStr = useMemo(() => formatDateStr(today), [today]);
+  const dateInputRef = useRef(null);
 
   const [anchorDate, setAnchorDate] = useState(() => {
     const d = new Date(today);
@@ -180,13 +181,32 @@ const TaskTimeline = ({
         {/* Calendar date-picker button — matches nav button group */}
         <div className="relative">
           <button
+            type="button"
+            onClick={() => {
+              const input = dateInputRef.current;
+              if (input) {
+                input.focus();
+                if (typeof input.showPicker === 'function') {
+                  try {
+                    input.showPicker();
+                  } catch (err) {
+                    try { input.click(); } catch (e) {}
+                  }
+                } else {
+                  try { input.click(); } catch (e) {}
+                }
+              }
+            }}
             className={NAV_BTN}
             aria-label="Pick a date"
             tabIndex={0}
           >
-            <Calendar className="h-5 w-5" />
+            <CalendarDays className="h-5 w-5" />
           </button>
           <input
+            ref={dateInputRef}
+            id="timeline-date-picker"
+            name="timelineDate"
             type="date"
             value={selectedDate || ''}
             onChange={(e) => {
@@ -194,7 +214,7 @@ const TaskTimeline = ({
                 onSelectDate(e.target.value);
               }
             }}
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
             aria-label="Choose timeline start date"
           />
         </div>
@@ -233,25 +253,6 @@ const TaskTimeline = ({
                 );
               })}
             </div>
-          ) : totalTasksInTimeline === 0 ? (
-            /* Empty state */
-            <AnimatePresence mode="wait" custom={slideDir}>
-              <motion.div
-                key={anchorKey + '-empty'}
-                custom={slideDir}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="flex items-center justify-center border border-dashed border-[#E5E7EB] rounded-[14px] bg-slate-50/50 h-[110px] w-full"
-              >
-                <div className="flex flex-col items-center">
-                  <Calendar className="h-5 w-5 text-slate-400 mb-1.5" />
-                  <span className="text-xs font-semibold text-slate-400">No upcoming tasks</span>
-                </div>
-              </motion.div>
-            </AnimatePresence>
           ) : (
             /* ── Animated week rail ── */
             <AnimatePresence mode="wait" custom={slideDir}>

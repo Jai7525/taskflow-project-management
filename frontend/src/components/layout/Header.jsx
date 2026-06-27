@@ -28,6 +28,8 @@ const Header = ({ searchQuery, onSearchChange, onMenuClick, onCreateTaskClick })
           <Search className="h-4 w-4 text-slate-400" />
         </div>
         <input
+          id="header-search-input"
+          name="search"
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}

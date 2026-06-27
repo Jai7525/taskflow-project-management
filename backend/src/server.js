@@ -11,10 +11,13 @@ const startServer = async () => {
 
   // Sync Sequelize models to database tables
   try {
+    // alter:true updates columns to match the model without dropping data.
+    // Use force:true only in dev when schema changes cannot be migrated cleanly.
     await sequelize.sync({ alter: true });
     console.log('Database tables synchronized successfully.');
 
-    // Seed demo admin user if not exists
+    // Seed a demo account so the app is immediately usable on first run.
+    // Credentials are hardcoded here intentionally — this is a local dev convenience, not a production user.
     const { User } = require('./models');
     const demoEmail = 'admin@taskflow.com';
     const existingDemoUser = await User.findOne({ where: { email: demoEmail } });

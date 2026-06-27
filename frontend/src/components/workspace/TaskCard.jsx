@@ -27,7 +27,7 @@ const TaskCard = ({ task, onClick }) => {
   const { user } = useAuth();
   const isCompleted = task.status === 'Completed';
   
-  const userName = user?.name || 'Jayakumar M';
+  const userName = user?.name || 'TaskFlow User';
   const initials = React.useMemo(() => {
     if (!userName) return 'TU';
     const parts = userName.trim().split(/\s+/);

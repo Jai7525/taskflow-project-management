@@ -28,10 +28,21 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
-    // If unauthorized, clear token and redirect or alert user
-    if (error.response && error.response.status === 401) {
+    // On 401, the token is invalid or expired — clear it and redirect to login.
+    // IMPORTANT: Skip this handler for auth endpoints (/login, /register).
+    // Login failures (wrong password) return 401 and must be handled locally
+    // on the LoginPage itself — not by triggering a global logout + redirect.
+    const requestUrl = error.config?.url || '';
+    const isAuthEndpoint =
+      requestUrl.includes('/auth/login') ||
+      requestUrl.includes('/auth/register');
+
+    if (error.response && error.response.status === 401 && !isAuthEndpoint) {
       removeToken();
-      // Optionally redirect to login, but we'll let ProtectedRoute/Page context trigger state changes
+      localStorage.removeItem('taskflow_user');
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

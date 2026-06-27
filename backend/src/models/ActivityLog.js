@@ -16,7 +16,9 @@ const ActivityLog = sequelize.define('ActivityLog', {
   },
   taskId: {
     type: DataTypes.UUID,
-    allowNull: true, // Activity logs can sometimes be for user actions not linked to a task, but according to rules we keep it as UUID
+    // Nullable so activity history survives task deletion.
+    // The associated Task row may be gone, but the log entry must persist for the audit trail.
+    allowNull: true,
     field: 'task_id'
   },
   userId: {
@@ -31,7 +33,8 @@ const ActivityLog = sequelize.define('ActivityLog', {
 }, {
   tableName: 'activity_logs',
   timestamps: true,
-  updatedAt: false, // Activity logs are immutable, no need for updatedAt
+  // Activity log entries are append-only — once created they are never modified.
+  updatedAt: false,
   underscored: true
 });
 

@@ -49,6 +49,7 @@ class AuthService {
     // Find the user by email
     const user = await User.findOne({ where: { email } });
     if (!user) {
+      // Return the same message as a wrong password to prevent user enumeration.
       const error = new Error('Invalid email or password');
       error.statusCode = 401;
       throw error;

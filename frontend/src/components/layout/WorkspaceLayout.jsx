@@ -15,6 +15,8 @@ import { toast } from 'react-hot-toast';
 const WorkspaceLayout = () => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  // searchCommit increments each time user presses Enter — lets WorkspacePage skip debounce
+  const [searchCommit, setSearchCommit] = useState(0);
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [createDrawerDefaultStatus, setCreateDrawerDefaultStatus] = useState('Pending');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -91,6 +93,12 @@ const WorkspaceLayout = () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, [isCreateDrawerOpen, isDetailsOpen]);
+
+  // Immediately commit search (called on Enter key) — bypasses debounce in WorkspacePage
+  const commitSearch = (value) => {
+    setSearchQuery(value);
+    setSearchCommit((prev) => prev + 1);
+  };
 
   // Deduplicated offline action warning toast helper
   const showOfflineToast = () => {
@@ -195,8 +203,12 @@ const WorkspaceLayout = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') {
+                if (e.key === 'Enter') {
+                  commitSearch(searchQuery);
+                  e.currentTarget.blur();
+                } else if (e.key === 'Escape') {
                   setSearchQuery('');
+                  commitSearch('');
                   e.currentTarget.blur();
                 }
               }}
@@ -215,6 +227,7 @@ const WorkspaceLayout = () => {
         <TopNavbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onSearchCommit={commitSearch}
           onCreateTaskClick={() => openCreateTaskDrawer('Pending')}
           isOffline={isOffline}
           showOfflineToast={showOfflineToast}
@@ -223,7 +236,7 @@ const WorkspaceLayout = () => {
         {/* Workspace content page view */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto w-full">
-            <Outlet context={{ searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast }} />
+            <Outlet context={{ searchQuery, searchCommit, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast }} />
           </div>
         </main>
       </div>

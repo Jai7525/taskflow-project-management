@@ -20,9 +20,11 @@ const authenticateJWT = async (req, res, next) => {
     // Extract token
     const token = authHeader.split(' ')[1];
 
-    // Verify token
+    // Inner try/catch isolates JWT verification failures (expired, tampered) from
+    // unexpected database errors so each can return the correct HTTP status.
     let decoded;
     try {
+      // The fallback secret is for local development only. In production, JWT_SECRET must be set.
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'development_secret_key_12345');
     } catch (err) {
       return res.status(401).json({

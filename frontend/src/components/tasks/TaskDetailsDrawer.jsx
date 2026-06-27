@@ -40,7 +40,6 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
   const [fetchError, setFetchError] = useState(null);
   const [apiError, setApiError] = useState(null);
 
-  // Fetch Task Details on status/updated changes or selection change
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Fetch Task Details on mount or selection change
@@ -135,7 +134,6 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
         setApiError('Unable to update task. Please try again.');
       }
     } catch (err) {
-      console.error(err);
       setApiError('Unable to update task. Please try again.');
     } finally {
       setIsSaving(false);
@@ -165,10 +163,10 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
   const renderFooter = () => {
     if (loading || fetchError) {
       return (
-        <div className="p-6 border-t border-slate-100 flex items-center justify-end">
+        <div className="p-6 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 active:bg-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
+            className="w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 active:bg-slate-200 rounded-xl text-xs font-bold transition flex items-center justify-center whitespace-nowrap cursor-pointer"
           >
             Close
           </button>
@@ -200,23 +198,23 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-3 pt-1">
-            <button
-              type="button"
-              disabled={isDeleting}
-              onClick={() => setShowDeleteConfirm(false)}
-              className="px-5 py-2 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40"
-            >
-              Cancel
-            </button>
+          <div className="flex flex-col md:flex-row md:items-center justify-end gap-3 pt-1">
             <button
               type="button"
               disabled={isDeleting}
               onClick={handleDeleteConfirm}
-              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(220,38,38,0.15)] cursor-pointer disabled:opacity-75 flex items-center space-x-1.5"
+              className="order-1 md:order-2 w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(220,38,38,0.15)] cursor-pointer disabled:opacity-75 flex items-center justify-center space-x-1.5 whitespace-nowrap"
             >
               {isDeleting && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
               <span>{isDeleting ? 'Deleting...' : 'Delete Permanently'}</span>
+            </button>
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => setShowDeleteConfirm(false)}
+              className="order-2 md:order-1 w-full md:w-auto h-11 md:h-auto px-5 py-2 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition flex items-center justify-center whitespace-nowrap disabled:opacity-40"
+            >
+              Cancel
             </button>
           </div>
         </motion.div>
@@ -231,8 +229,21 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="p-6 border-t border-slate-100 flex items-center justify-end space-x-3 shrink-0"
+          className="p-6 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-end gap-3 shrink-0"
         >
+          <button
+            type={isOffline ? "button" : "submit"}
+            form={isOffline ? undefined : "edit-task-form"}
+            onClick={isOffline ? showOfflineToast : undefined}
+            disabled={isSaving || (!isOffline && !isDirty())}
+            title={isOffline ? "Requires an internet connection" : "Save Changes"}
+            className={`order-1 md:order-2 w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-[#6366F1] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] flex items-center justify-center space-x-1.5 whitespace-nowrap ${
+              isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#5053de] active:bg-[#4043ce] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+            }`}
+          >
+            {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -241,22 +252,9 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
               setApiError(null);
             }}
             disabled={isSaving}
-            className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40"
+            className="order-2 md:order-1 w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition flex items-center justify-center whitespace-nowrap disabled:opacity-40"
           >
             Cancel
-          </button>
-          <button
-            type={isOffline ? "button" : "submit"}
-            form={isOffline ? undefined : "edit-task-form"}
-            onClick={isOffline ? showOfflineToast : undefined}
-            disabled={isSaving || (!isOffline && !isDirty())}
-            title={isOffline ? "Requires an internet connection" : "Save Changes"}
-            className={`px-5 py-2.5 bg-[#6366F1] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] flex items-center space-x-1.5 ${
-              isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#5053de] active:bg-[#4043ce] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
-            }`}
-          >
-            {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
           </button>
         </motion.div>
       );
@@ -269,47 +267,44 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.18 }}
-        className="p-6 border-t border-slate-100 flex items-center justify-between shrink-0"
+        className="p-6 border-t border-slate-100 flex flex-col md:flex-row md:items-center gap-3 shrink-0"
       >
+        <button
+          type="button"
+          onClick={isOffline ? showOfflineToast : () => {
+            setIsEditing(true);
+            setEditData({
+              title: task.title,
+              description: task.description,
+              status: task.status,
+              priority: task.priority || 'Medium',
+              dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
+            });
+          }}
+          title={isOffline ? "Requires an internet connection" : "Edit task"}
+          className={`order-1 md:order-2 w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition flex items-center justify-center whitespace-nowrap ${
+            isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 active:bg-slate-100 cursor-pointer'
+          }`}
+        >
+          Edit Task
+        </button>
         <button
           type="button"
           onClick={isOffline ? showOfflineToast : () => setShowDeleteConfirm(true)}
           title={isOffline ? "Requires an internet connection" : "Delete task"}
-          className={`px-5 py-2.5 bg-red-50 text-red-750 border border-red-200 rounded-xl text-sm font-semibold transition ${
+          className={`order-2 md:order-1 md:mr-auto w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-red-50 text-red-750 border border-red-200 rounded-xl text-sm font-semibold transition flex items-center justify-center whitespace-nowrap ${
             isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100/70 active:bg-red-200/50 cursor-pointer'
           }`}
         >
           Delete Task
         </button>
-
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={isOffline ? showOfflineToast : () => {
-              setIsEditing(true);
-              setEditData({
-                title: task.title,
-                description: task.description,
-                status: task.status,
-                priority: task.priority || 'Medium',
-                dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
-              });
-            }}
-            title={isOffline ? "Requires an internet connection" : "Edit task"}
-            className={`px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition ${
-              isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 active:bg-slate-100 cursor-pointer'
-            }`}
-          >
-            Edit Task
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] active:bg-[#4043ce] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer"
-          >
-            Close
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="order-3 md:order-3 w-full md:w-auto h-11 md:h-auto px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] active:bg-[#4043ce] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] flex items-center justify-center whitespace-nowrap cursor-pointer"
+        >
+          Close
+        </button>
       </motion.div>
     );
   };
@@ -338,13 +333,14 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
             transition={{ duration: 0.25, ease: 'easeOut' }}
             role="dialog"
             aria-modal="true"
+            aria-labelledby="task-details-title"
             className="fixed inset-0 lg:inset-y-0 lg:left-auto lg:right-0 z-50 w-full lg:w-[480px] h-full bg-white border-l border-slate-200 shadow-2xl flex flex-col select-none overflow-hidden"
           >
             {/* Header section */}
             <div className="py-5 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
               <div>
                 <div className="flex items-center space-x-3">
-                  <h2 className="text-lg font-bold text-slate-900 font-sans">
+                  <h2 id="task-details-title" className="text-lg font-bold text-slate-900 font-sans">
                     Task Details
                   </h2>
                   {!loading && !fetchError && task && (

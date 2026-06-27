@@ -66,7 +66,7 @@ const getActivityColor = (action) => {
  * Displays chronological workspace action events
  * with semantic icons and status colors.
  */
-const RecentActivity = ({ activities, isLoading, error, onRetry, onActivityClick }) => {
+const RecentActivity = ({ activities, isLoading, error, onRetry, onActivityClick, searchActive = false }) => {
   if (isLoading) {
     return (
       <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-[18px]">
@@ -112,6 +112,19 @@ const RecentActivity = ({ activities, isLoading, error, onRetry, onActivityClick
   }
 
   if (!activities || activities.length === 0) {
+    if (searchActive) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 select-none h-full">
+          <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mb-3.5 border border-slate-100/60 shadow-sm shrink-0">
+            <Activity className="h-6 w-6 text-slate-400" />
+          </div>
+          <h4 className="text-sm font-bold text-slate-850">No matching activity</h4>
+          <p className="text-xs text-slate-400 mt-1.5 max-w-[260px] leading-relaxed font-medium">
+            Try another keyword.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center p-6 select-none h-full">
         <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mb-3.5 border border-slate-100/60 shadow-sm shrink-0">
@@ -129,7 +142,7 @@ const RecentActivity = ({ activities, isLoading, error, onRetry, onActivityClick
   }
 
   return (
-    <div className="flex-1 overflow-y-auto pr-1 space-y-[18px] custom-scrollbar w-full">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 space-y-[18px] custom-scrollbar w-full">
       {activities.map((activity) => {
         const Icon = getActivityIcon(activity.action);
         const colorClasses = getActivityColor(activity.action);

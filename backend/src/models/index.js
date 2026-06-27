@@ -5,7 +5,7 @@ const ActivityLog = require('./ActivityLog');
 
 // Define Associations
 
-// User <-> Task (One-to-Many)
+// User owns Tasks. Deleting a user cascades and removes their tasks.
 User.hasMany(Task, {
   foreignKey: 'userId',
   as: 'tasks',
@@ -16,7 +16,8 @@ Task.belongsTo(User, {
   as: 'user'
 });
 
-// Task <-> ActivityLog (One-to-Many)
+// Tasks generate ActivityLog entries. When a task is deleted, log entries are preserved
+// (taskId is set to NULL) so audit history remains visible even after task removal.
 Task.hasMany(ActivityLog, {
   foreignKey: 'taskId',
   as: 'activityLogs',

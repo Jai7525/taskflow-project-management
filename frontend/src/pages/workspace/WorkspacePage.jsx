@@ -30,7 +30,7 @@ const containerVariants = {
  * task board, and activity feed.
  */
 const WorkspacePage = () => {
-  const { searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast } = useOutletContext();
+  const { searchQuery, searchCommit, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast } = useOutletContext();
   const [debouncedSearch, setDebouncedSearch] = useState('');
   
   // Timeline tasks for calendar indicators (max limit 150)
@@ -73,7 +73,7 @@ const WorkspacePage = () => {
     { label: 'Oldest First', value: 'oldest' },
   ];
 
-  // Debounce search query (300ms)
+  // Debounce search query (300ms) for live-typing
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery || '');
@@ -81,13 +81,26 @@ const WorkspacePage = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Reset page when search, status, or sort changes
+  // When user presses Enter, immediately apply the search (skip debounce)
+  useEffect(() => {
+    if (searchCommit > 0) {
+      setDebouncedSearch(searchQuery || '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchCommit]);
+
+  // Reset page when search transitions occur
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, activeStatus, sortOrder]);
+  }, [debouncedSearch]);
+
+  // Reset page when status filter or sort order changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeStatus, sortOrder]);
 
   // Fetch all tasks for due-date timeline calculations
-  const fetchTimelineTasks = useCallback(async (searchVal) => {
+  const fetchTimelineTasks = useCallback(async () => {
     if (!navigator.onLine && hasLoadedTimeline.current) {
       setTimelineLoading(false);
       return;
@@ -95,7 +108,7 @@ const WorkspacePage = () => {
     setTimelineLoading(true);
     setTimelineError(null);
     try {
-      const response = await taskService.getTasks({ limit: 150, search: searchVal });
+      const response = await taskService.getTasks({ limit: 150 });
       if (response?.success) {
         setTimelineTasks(response.data.tasks || []);
         hasLoadedTimeline.current = true;
@@ -176,10 +189,10 @@ const WorkspacePage = () => {
     }
   }, []);
 
-  // Trigger timeline refresh when search filters update
+  // Trigger timeline refresh on mount or refresh
   useEffect(() => {
-    fetchTimelineTasks(debouncedSearch);
-  }, [debouncedSearch, refreshTrigger, fetchTimelineTasks]);
+    fetchTimelineTasks();
+  }, [refreshTrigger, fetchTimelineTasks]);
 
   // Trigger board refresh when pagination or layout changes
   useEffect(() => {
@@ -219,8 +232,8 @@ const WorkspacePage = () => {
     }
   };
 
-  // Disable timeline date filter when global search is active.
-  const filteredTasks = useMemo(() => {
+  // Single source of truth for filtered tasks shown on the board
+  const visibleTasks = useMemo(() => {
     if (debouncedSearch) {
       return boardTasks;
     }
@@ -230,24 +243,26 @@ const WorkspacePage = () => {
   }, [boardTasks, selectedDate, debouncedSearch]);
 
   // Memoize status grouping calculations to avoid duplicate renders.
-  const pendingTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Pending'), [filteredTasks]);
-  const inProgressTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'In Progress'), [filteredTasks]);
-  const completedTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Completed'), [filteredTasks]);
+  const pendingTasks = useMemo(() => visibleTasks.filter((t) => t.status === 'Pending'), [visibleTasks]);
+  const inProgressTasks = useMemo(() => visibleTasks.filter((t) => t.status === 'In Progress'), [visibleTasks]);
+  const completedTasks = useMemo(() => visibleTasks.filter((t) => t.status === 'Completed'), [visibleTasks]);
 
-  // Filter activities to show only those relating to matching search results.
+  // Filter activities to show only those matching search query (matches task title, action type, or text)
   const searchFilteredActivities = useMemo(() => {
     if (!debouncedSearch) return activities;
     const cleanSearch = debouncedSearch.toLowerCase().trim();
     return activities.filter((activity) => {
-      // If task is still available in timelineTasks, it's matching
-      const matchesTimeline = activity.taskId && timelineTasks.some((t) => t.id === activity.taskId);
-      if (matchesTimeline) return true;
-      
-      // If task is deleted, fallback to matching by action name
-      const matchesAction = activity.action && activity.action.toLowerCase().includes(cleanSearch);
-      return !!matchesAction;
+      const taskTitle = activity.task?.title ? activity.task.title.toLowerCase() : 'deleted task';
+      const actionText = activity.action ? activity.action.toLowerCase() : '';
+      const fallbackText = !activity.task ? 'deleted' : '';
+
+      return (
+        taskTitle.includes(cleanSearch) ||
+        actionText.includes(cleanSearch) ||
+        fallbackText.includes(cleanSearch)
+      );
     });
-  }, [activities, debouncedSearch, timelineTasks]);
+  }, [activities, debouncedSearch]);
 
   // Helper to render skeleton loaders or tasks inside columns
   const renderColumnContent = (columnTasks, emptyText, status) => {
@@ -268,7 +283,7 @@ const WorkspacePage = () => {
               <ClipboardList className="h-5 w-5 text-slate-450" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-800 font-sans">No matching tasks</p>
+              <p className="text-xs font-bold text-slate-800 font-sans">No matching {status} tasks</p>
               <p className="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[200px]">
                 Try another keyword.
               </p>
@@ -345,6 +360,7 @@ const WorkspacePage = () => {
                 });
               }
             }}
+            aria-label="Retry connection"
             className="flex items-center space-x-1.5 px-4.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-sm"
           >
             Retry
@@ -384,7 +400,7 @@ const WorkspacePage = () => {
               </h2>
               {debouncedSearch && (
                 <span className="text-xs text-slate-400 font-medium font-sans">
-                  Showing {timelineTasks.length} {timelineTasks.length === 1 ? 'result' : 'results'} for "{debouncedSearch}"
+                  Showing {visibleTasks.length} {visibleTasks.length === 1 ? 'result' : 'results'} for "{debouncedSearch}"
                 </span>
               )}
             </div>
@@ -426,10 +442,10 @@ const WorkspacePage = () => {
                 Retry
               </button>
             </div>
-          ) : !loading && boardTasks.length === 0 && debouncedSearch ? (
+          ) : !loading && visibleTasks.length === 0 && debouncedSearch ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[#E5E7EB] rounded-[24px] bg-[#F8FAFC] text-center w-full min-h-[250px] select-none">
               <span className="text-3xl mb-3">🔍</span>
-              <h3 className="text-sm font-bold text-[#111827] font-sans">No matching tasks found</h3>
+              <h3 className="text-sm font-bold text-[#111827] font-sans">No matching tasks</h3>
               <p className="text-xs text-slate-400 font-medium mt-1">Try another keyword.</p>
             </div>
           ) : (
@@ -449,8 +465,10 @@ const WorkspacePage = () => {
                     </div>
                     <div className="flex space-x-1 text-textMuted">
                       <button
+                        type="button"
                         onClick={isOffline ? showOfflineToast : () => openCreateTaskDrawer('Pending')}
                         title={isOffline ? "Requires an internet connection" : "Add Pending Task"}
+                        aria-label={isOffline ? "Requires an internet connection to add pending tasks" : "Add Pending Task"}
                         className={`p-0.5 transition-all ${
                           isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:text-textPrimary cursor-pointer transition-colors duration-150'
                         }`}
@@ -478,8 +496,10 @@ const WorkspacePage = () => {
                     </div>
                     <div className="flex space-x-1 text-textMuted">
                       <button
+                        type="button"
                         onClick={isOffline ? showOfflineToast : () => openCreateTaskDrawer('In Progress')}
                         title={isOffline ? "Requires an internet connection" : "Add In Progress Task"}
+                        aria-label={isOffline ? "Requires an internet connection to add in progress tasks" : "Add In Progress Task"}
                         className={`p-0.5 transition-all ${
                           isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:text-textPrimary cursor-pointer transition-colors duration-150'
                         }`}
@@ -507,8 +527,10 @@ const WorkspacePage = () => {
                     </div>
                     <div className="flex space-x-1 text-textMuted">
                       <button
+                        type="button"
                         onClick={isOffline ? showOfflineToast : () => openCreateTaskDrawer('Completed')}
                         title={isOffline ? "Requires an internet connection" : "Add Completed Task"}
+                        aria-label={isOffline ? "Requires an internet connection to add completed tasks" : "Add Completed Task"}
                         className={`p-0.5 transition-all ${
                           isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:text-textPrimary cursor-pointer transition-colors duration-150'
                         }`}
@@ -551,6 +573,7 @@ const WorkspacePage = () => {
             error={activityError}
             onRetry={fetchRecentActivity}
             onActivityClick={handleActivityClick}
+            searchActive={!!debouncedSearch}
           />
         </div>
 

@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 const TopNavbar = ({
   searchQuery = '',
   onSearchChange,
+  onSearchCommit,
   onCreateTaskClick,
   isOffline = false,
   showOfflineToast,
@@ -66,8 +67,13 @@ const TopNavbar = ({
           value={searchQuery}
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Enter') {
+              // Immediately commit search, bypassing the debounce delay
+              onSearchCommit && onSearchCommit(searchQuery);
+              e.currentTarget.blur();
+            } else if (e.key === 'Escape') {
               onSearchChange && onSearchChange('');
+              onSearchCommit && onSearchCommit('');
               e.currentTarget.blur();
             }
           }}

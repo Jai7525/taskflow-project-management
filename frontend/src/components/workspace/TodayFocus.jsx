@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ClipboardList, Clock, Loader, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ClipboardList, Clock3, LoaderCircle, CircleCheckBig, AlertTriangle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import taskService from '../../services/taskService';
 import StatisticCard from './StatisticCard';
@@ -86,15 +86,8 @@ const TodayFocus = ({ refreshTrigger, searchActive = false, searchTasks = [] }) 
     );
   }
 
-  // Handle client-side search stats vs backend stats
-  const data = searchActive
-    ? {
-        total: searchTasks.length,
-        pending: searchTasks.filter((t) => t.status === 'Pending').length,
-        inProgress: searchTasks.filter((t) => t.status === 'In Progress').length,
-        completed: searchTasks.filter((t) => t.status === 'Completed').length,
-      }
-    : (statistics || { total: 0, pending: 0, inProgress: 0, completed: 0 });
+  // Statistics always represent the user's complete workspace.
+  const data = statistics || { total: 0, pending: 0, inProgress: 0, completed: 0 };
 
   return (
     <motion.div
@@ -114,21 +107,21 @@ const TodayFocus = ({ refreshTrigger, searchActive = false, searchTasks = [] }) 
         title="Pending"
         value={data.pending}
         description="Waiting to start"
-        icon={Clock}
+        icon={Clock3}
         colorTheme="amber"
       />
       <StatisticCard
         title="In Progress"
         value={data.inProgress}
         description="Currently active"
-        icon={Loader}
+        icon={LoaderCircle}
         colorTheme="blue"
       />
       <StatisticCard
         title="Completed"
         value={data.completed}
         description="Finished tasks"
-        icon={CheckCircle2}
+        icon={CircleCheckBig}
         colorTheme="green"
       />
     </motion.div>

@@ -142,7 +142,6 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
         setApiError('Unable to create task. Please try again.');
       }
     } catch (err) {
-      console.error(err);
       setApiError('Unable to create task. Please try again.');
     } finally {
       setIsSubmitting(false);
