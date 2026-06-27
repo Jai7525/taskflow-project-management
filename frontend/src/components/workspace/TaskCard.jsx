@@ -6,10 +6,10 @@ import { formatDate } from '../../utils/formatDate';
 import { useAuth } from '../../contexts/AuthContext';
 
 /**
- * Premium Task Card component conforming to Phase 8D visual guidelines.
- * Displays: Title, truncated description, due date, status/priority badges,
- * progress bars (for In Progress tasks only), assignee profile pictures,
- * and Framer Motion hover/entry transitions.
+ * TaskCard
+ *
+ * Displays task details (title, priority, due date)
+ * inside the task board column list.
  */
 const cardVariants = {
   hidden: { opacity: 0, y: 8 },

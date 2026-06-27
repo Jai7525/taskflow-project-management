@@ -213,10 +213,12 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
 
                 {/* Task Title */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                  <label htmlFor="create-task-title" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
                     Task Title <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="create-task-title"
+                    name="title"
                     type="text"
                     ref={titleInputRef}
                     disabled={isSubmitting}
@@ -236,10 +238,12 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
 
                 {/* Description */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                  <label htmlFor="create-task-description" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
                     Description <span className="text-red-500">*</span>
                   </label>
                   <textarea
+                    id="create-task-description"
+                    name="description"
                     rows={5}
                     ref={descriptionInputRef}
                     disabled={isSubmitting}
@@ -267,10 +271,12 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                 <div className="grid grid-cols-2 gap-4">
                   {/* Status Selection */}
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                    <label htmlFor="create-task-status" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
                       Status <span className="text-red-500">*</span>
                     </label>
                     <select
+                      id="create-task-status"
+                      name="status"
                       disabled={isSubmitting}
                       value={formData.status}
                       onChange={(e) => handleInputChange('status', e.target.value)}
@@ -284,10 +290,12 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
 
                   {/* Priority Selection */}
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                    <label htmlFor="create-task-priority" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
                       Priority <span className="text-red-500">*</span>
                     </label>
                     <select
+                      id="create-task-priority"
+                      name="priority"
                       disabled={isSubmitting}
                       value={formData.priority}
                       onChange={(e) => handleInputChange('priority', e.target.value)}
@@ -302,7 +310,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
 
                 {/* Due Date picker */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                  <label htmlFor="create-task-due-date" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
                     Due Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -310,6 +318,8 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                       <Calendar className="h-4 w-4" />
                     </div>
                     <input
+                      id="create-task-due-date"
+                      name="dueDate"
                       type={dueDateFocused || formData.dueDate ? "date" : "text"}
                       onFocus={() => setDueDateFocused(true)}
                       onBlur={() => setDueDateFocused(false)}

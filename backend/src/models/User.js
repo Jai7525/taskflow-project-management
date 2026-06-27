@@ -1,6 +1,12 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
+/**
+ * User Database Model.
+ *
+ * Represents a user account inside TaskFlow.
+ * Handles credential checks and workspace ownership parameters.
+ */
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,

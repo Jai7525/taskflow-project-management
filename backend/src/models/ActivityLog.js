@@ -1,6 +1,12 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
+/**
+ * ActivityLog Database Model.
+ *
+ * Represents an entry in the dashboard activity feed.
+ * Tracks user project actions (creation, updates, completions, and deletions).
+ */
 const ActivityLog = sequelize.define('ActivityLog', {
   id: {
     type: DataTypes.UUID,

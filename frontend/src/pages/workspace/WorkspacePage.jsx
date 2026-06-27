@@ -24,8 +24,10 @@ const containerVariants = {
 };
 
 /**
- * Enterprise Workspace Page.
- * Coordinates dynamic Task Timeline with dynamic task board columns for Phase 8D.
+ * WorkspacePage
+ *
+ * Coordinates dashboard statistics, timeline,
+ * task board, and activity feed.
  */
 const WorkspacePage = () => {
   const { searchQuery, refreshTrigger, setRefreshTrigger, openCreateTaskDrawer, openTaskDetailsDrawer, isOffline, showOfflineToast } = useOutletContext();
@@ -217,8 +219,7 @@ const WorkspacePage = () => {
     }
   };
 
-  // Filter tasks client-side based on timeline's selectedDate
-  // Mode 2 — Global Search Mode: Temporarily disable the timeline filter when search query is active
+  // Disable timeline date filter when global search is active.
   const filteredTasks = useMemo(() => {
     if (debouncedSearch) {
       return boardTasks;
@@ -228,12 +229,12 @@ const WorkspacePage = () => {
       : boardTasks;
   }, [boardTasks, selectedDate, debouncedSearch]);
 
-  // Group filtered tasks by status
+  // Memoize status grouping calculations to avoid duplicate renders.
   const pendingTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Pending'), [filteredTasks]);
   const inProgressTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'In Progress'), [filteredTasks]);
   const completedTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Completed'), [filteredTasks]);
 
-  // Filter activities to show only those relating to matching tasks under search mode
+  // Filter activities to show only those relating to matching search results.
   const searchFilteredActivities = useMemo(() => {
     if (!debouncedSearch) return activities;
     const cleanSearch = debouncedSearch.toLowerCase().trim();

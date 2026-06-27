@@ -1,6 +1,12 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
+/**
+ * Task Database Model.
+ *
+ * Represents a single task displayed in the workspace.
+ * Used by the dashboard board columns, date timeline, and activity logs.
+ */
 const Task = sequelize.define('Task', {
   id: {
     type: DataTypes.UUID,

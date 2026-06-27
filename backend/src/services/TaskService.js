@@ -1,9 +1,17 @@
+/**
+ * Task Service
+ *
+ * Handles task business logic,
+ * dashboard synchronization,
+ * and activity logging.
+ */
+
 const { Op } = require('sequelize');
 const { Task, ActivityLog } = require('../models');
 
 class TaskService {
   /**
-   * Create a new task
+   * Creates a new task and logs the action in the activity feed.
    */
   async createTask(userId, taskData) {
     const { title, description, status, priority, dueDate } = taskData;
@@ -17,7 +25,7 @@ class TaskService {
       userId
     });
 
-    // Create activity log
+    // Create activity log record to track creation in the dashboard feed.
     await ActivityLog.create({
       userId,
       taskId: task.id,
@@ -28,7 +36,7 @@ class TaskService {
   }
 
   /**
-   * Get all tasks with sorting, search, filter, and pagination
+   * Retrieves all tasks using search, filter, and pagination rules.
    */
   async getAllTasks(userId, query) {
     const page = parseInt(query.page, 10) || 1;
@@ -36,14 +44,13 @@ class TaskService {
     const offset = (page - 1) * limit;
 
     const { status, search, sort } = query;
-
-    // Build query conditions
     const whereConditions = { userId };
 
     if (status) {
       whereConditions.status = status;
     }
 
+    // Support global multi-field search (title OR description).
     if (search) {
       const cleanSearch = search.trim();
       whereConditions[Op.or] = [
@@ -52,8 +59,7 @@ class TaskService {
       ];
     }
 
-    // Determine sort order
-    let order = [['created_at', 'DESC']]; // default latest first
+    let order = [['created_at', 'DESC']];
     if (sort === 'oldest') {
       order = [['created_at', 'ASC']];
     } else if (sort === 'latest') {
@@ -81,7 +87,7 @@ class TaskService {
   }
 
   /**
-   * Get task by ID
+   * Retrieves a task after verifying ownership.
    */
   async getTaskById(userId, taskId) {
     const task = await Task.findOne({
@@ -98,13 +104,12 @@ class TaskService {
   }
 
   /**
-   * Update task fields
+   * Patches task properties and records update events.
    */
   async updateTask(userId, taskId, taskData) {
     const task = await this.getTaskById(userId, taskId);
     const { title, description, status, priority, dueDate } = taskData;
 
-    // Apply updates
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
@@ -113,7 +118,7 @@ class TaskService {
 
     await task.save();
 
-    // Create activity log
+    // Create activity log record to track modifications in the dashboard feed.
     await ActivityLog.create({
       userId,
       taskId: task.id,
@@ -124,7 +129,7 @@ class TaskService {
   }
 
   /**
-   * Mark a task status as Completed
+   * Marks a task status as Completed and records the event.
    */
   async completeTask(userId, taskId) {
     const task = await this.getTaskById(userId, taskId);
@@ -132,7 +137,7 @@ class TaskService {
     task.status = 'Completed';
     await task.save();
 
-    // Create activity log
+    // Create activity log record to track completions in the dashboard feed.
     await ActivityLog.create({
       userId,
       taskId: task.id,
@@ -143,13 +148,13 @@ class TaskService {
   }
 
   /**
-   * Delete a task
+   * Deletes a task after generating a log entry.
    */
   async deleteTask(userId, taskId) {
     const task = await this.getTaskById(userId, taskId);
 
-    // Create activity log BEFORE deleting the task
-    // The foreign key constraint onDelete SET NULL will handle reference clearing
+    // Create activity log BEFORE deleting the task to prevent orphan references.
+    // The foreign key constraint onDelete SET NULL will handle reference clearing.
     await ActivityLog.create({
       userId,
       taskId: task.id,

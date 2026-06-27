@@ -2,9 +2,7 @@ import React from 'react';
 import { Activity, CirclePlus, Pencil, RefreshCw, Trash2, Clock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-/**
- * Translates timestamp to relative time string (e.g. Just now, 5 minutes ago, Yesterday).
- */
+// Translates timestamp to relative time.
 const getRelativeTime = (dateVal) => {
   if (!dateVal) return '';
   const date = new Date(dateVal);
@@ -38,9 +36,7 @@ const getRelativeTime = (dateVal) => {
   }
 };
 
-/**
- * Returns an icon based on activity action text.
- */
+// Maps activity action strings to icons.
 const getActivityIcon = (action) => {
   const lowerAction = action?.toLowerCase() || '';
 
@@ -52,9 +48,7 @@ const getActivityIcon = (action) => {
   return Clock;
 };
 
-/**
- * Returns semantic color classes based on activity action.
- */
+// Returns styling tokens based on activity type.
 const getActivityColor = (action) => {
   const lowerAction = action?.toLowerCase() || '';
 
@@ -66,6 +60,12 @@ const getActivityColor = (action) => {
   return 'bg-slate-50 text-slate-500 border-slate-200';
 };
 
+/**
+ * RecentActivity
+ *
+ * Displays chronological workspace action events
+ * with semantic icons and status colors.
+ */
 const RecentActivity = ({ activities, isLoading, error, onRetry, onActivityClick }) => {
   if (isLoading) {
     return (

@@ -15,9 +15,10 @@ const containerVariants = {
 };
 
 /**
- * TodayFocus section containing 4 statistics cards.
- * Manages loading skeletons, error state boundaries, and retry functionality.
- * Computes statistics client-side when search is active.
+ * TodayFocus
+ *
+ * Displays task count statistics cards and
+ * computes search-based metrics client-side.
  */
 const TodayFocus = ({ refreshTrigger, searchActive = false, searchTasks = [] }) => {
   const [statistics, setStatistics] = useState(null);

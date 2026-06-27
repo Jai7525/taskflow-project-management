@@ -55,10 +55,13 @@ const TopNavbar = ({
       
       {/* Wide Search Bar (SaaS style with Cmd+K indicator) */}
       <div className="max-w-[500px] w-full relative">
+        <label htmlFor="desktop-search-input" className="sr-only">Search tasks</label>
         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
           <Search className="h-4 w-4 text-slate-400" />
         </div>
         <input
+          id="desktop-search-input"
+          name="search"
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}

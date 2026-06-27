@@ -109,10 +109,12 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
 
       {/* Task Title */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+        <label htmlFor="edit-task-title" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
           Task Title <span className="text-red-500">*</span>
         </label>
         <input
+          id="edit-task-title"
+          name="title"
           type="text"
           ref={titleRef}
           disabled={isSaving}
@@ -130,10 +132,12 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
 
       {/* Description */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+        <label htmlFor="edit-task-description" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
           Description <span className="text-red-500">*</span>
         </label>
         <textarea
+          id="edit-task-description"
+          name="description"
           rows={5}
           ref={descRef}
           disabled={isSaving}
@@ -159,10 +163,12 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
       <div className="grid grid-cols-2 gap-4">
         {/* Status */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+          <label htmlFor="edit-task-status" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
             Status <span className="text-red-500">*</span>
           </label>
           <select
+            id="edit-task-status"
+            name="status"
             disabled={isSaving}
             value={formData.status}
             onChange={(e) => handleInputChange('status', e.target.value)}
@@ -176,10 +182,12 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
 
         {/* Priority */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+          <label htmlFor="edit-task-priority" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
             Priority <span className="text-red-500">*</span>
           </label>
           <select
+            id="edit-task-priority"
+            name="priority"
             disabled={isSaving}
             value={formData.priority}
             onChange={(e) => handleInputChange('priority', e.target.value)}
@@ -194,7 +202,7 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
 
       {/* Due Date picker */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+        <label htmlFor="edit-task-due-date" className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
           Due Date <span className="text-red-500">*</span>
         </label>
         <div className="relative">
@@ -202,6 +210,8 @@ const TaskDetailsEdit = ({ task, onSave, isSaving, apiError, setApiError, onChan
             <Calendar className="h-4 w-4" />
           </div>
           <input
+            id="edit-task-due-date"
+            name="dueDate"
             type={dueDateFocused || formData.dueDate ? 'date' : 'text'}
             onFocus={() => setDueDateFocused(true)}
             onBlur={() => setDueDateFocused(false)}

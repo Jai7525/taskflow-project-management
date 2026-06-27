@@ -1,7 +1,9 @@
 import React from 'react';
 
 /**
- * Workspace header welcome block with mobile responsive text wrapping and max width constraint.
+ * WorkspaceHeader
+ *
+ * Renders the welcome banner and daily workspace greeting.
  */
 const WorkspaceHeader = () => {
   return (

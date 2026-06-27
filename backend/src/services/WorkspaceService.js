@@ -1,10 +1,16 @@
+/**
+ * Workspace Service
+ *
+ * Coordinates workspace statistics
+ * and aggregates audit activity feeds.
+ */
+
 const { Op, fn, col, literal } = require('sequelize');
 const { Task, ActivityLog, User } = require('../models');
 
 class WorkspaceService {
   /**
-   * Return aggregate task statistics for the logged-in user:
-   * total tasks, and breakdown by each status value.
+   * Aggregates task count statistics by workflow status.
    */
   async getStatistics(userId) {
     const [total, pending, inProgress, completed] = await Promise.all([
@@ -23,21 +29,19 @@ class WorkspaceService {
   }
 
   /**
-   * Return recent activity logs for the logged-in user,
-   * including the related task title for display context.
-   * Limited to the most recent 10 actions.
+   * Retrieves the latest 10 activity logs for the dashboard feed.
    */
   async getRecentActivity(userId) {
     const activityLogs = await ActivityLog.findAll({
       where: { userId },
-      order: [['created_at', 'DESC']],
+      order: [['created_at', 'DESC']], // Return newest activities first for the dashboard feed.
       limit: 10,
       include: [
         {
           model: Task,
           as: 'task',
           attributes: ['id', 'title'],
-          // Task may be null if it was deleted (SET NULL constraint)
+          // Keep join optional (left outer join) since deleted tasks remain in activity history.
           required: false
         }
       ]

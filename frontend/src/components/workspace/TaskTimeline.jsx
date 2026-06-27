@@ -24,12 +24,10 @@ const NAV_BTN =
   'focus:ring-2 focus:ring-[#6366F1]/20 disabled:opacity-40 disabled:cursor-default';
 
 /**
- * Dynamic Task Timeline Date Rail (Phase 8C).
- * Automatically calculates today, aggregates counts from backend tasks,
- * and navigates in steps of exactly 7 days.
+ * TaskTimeline
  *
- * Polish pass: unified card states, smooth week slide, hover-lift,
- * premium nav buttons, breathing-room padding, sentence-case counts.
+ * Renders the horizontal 7-day calendar navigation rail
+ * and tracks the selected query date.
  */
 const TaskTimeline = ({
   tasks = [],
