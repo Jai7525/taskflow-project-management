@@ -17,8 +17,9 @@ const containerVariants = {
 /**
  * TodayFocus section containing 4 statistics cards.
  * Manages loading skeletons, error state boundaries, and retry functionality.
+ * Computes statistics client-side when search is active.
  */
-const TodayFocus = ({ refreshTrigger }) => {
+const TodayFocus = ({ refreshTrigger, searchActive = false, searchTasks = [] }) => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,7 +45,8 @@ const TodayFocus = ({ refreshTrigger }) => {
     fetchStats();
   }, [fetchStats, refreshTrigger]);
 
-  if (loading) {
+  // When search is active, we bypass loading skeleton to show instant client-side metrics
+  if (loading && !searchActive) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         <StatisticSkeleton />
@@ -55,7 +57,7 @@ const TodayFocus = ({ refreshTrigger }) => {
     );
   }
 
-  if (error) {
+  if (error && !searchActive) {
     const isOffline = error.includes("offline");
     return (
       <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-4 w-full h-auto sm:h-[132px] select-none">
@@ -83,8 +85,15 @@ const TodayFocus = ({ refreshTrigger }) => {
     );
   }
 
-  // Handle empty or loaded state cleanly
-  const data = statistics || { total: 0, pending: 0, inProgress: 0, completed: 0 };
+  // Handle client-side search stats vs backend stats
+  const data = searchActive
+    ? {
+        total: searchTasks.length,
+        pending: searchTasks.filter((t) => t.status === 'Pending').length,
+        inProgress: searchTasks.filter((t) => t.status === 'In Progress').length,
+        completed: searchTasks.filter((t) => t.status === 'Completed').length,
+      }
+    : (statistics || { total: 0, pending: 0, inProgress: 0, completed: 0 });
 
   return (
     <motion.div

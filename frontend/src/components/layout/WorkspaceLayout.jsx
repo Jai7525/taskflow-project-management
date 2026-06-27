@@ -153,7 +153,13 @@ const WorkspaceLayout = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search tasks, priorities, projects..."
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setSearchQuery('');
+                  e.currentTarget.blur();
+                }
+              }}
+              placeholder="Search tasks..."
               className="w-full pl-9 pr-4 py-2 bg-[#F6F8FB] border border-[#E5E7EB] rounded-xl text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/10 focus:border-[#6366F1] placeholder-slate-400 font-medium transition duration-150"
             />
           </div>

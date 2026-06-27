@@ -218,16 +218,35 @@ const WorkspacePage = () => {
   };
 
   // Filter tasks client-side based on timeline's selectedDate
+  // Mode 2 — Global Search Mode: Temporarily disable the timeline filter when search query is active
   const filteredTasks = useMemo(() => {
+    if (debouncedSearch) {
+      return boardTasks;
+    }
     return selectedDate
       ? boardTasks.filter((task) => task.dueDate && task.dueDate.startsWith(selectedDate))
       : boardTasks;
-  }, [boardTasks, selectedDate]);
+  }, [boardTasks, selectedDate, debouncedSearch]);
 
   // Group filtered tasks by status
   const pendingTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Pending'), [filteredTasks]);
   const inProgressTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'In Progress'), [filteredTasks]);
   const completedTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Completed'), [filteredTasks]);
+
+  // Filter activities to show only those relating to matching tasks under search mode
+  const searchFilteredActivities = useMemo(() => {
+    if (!debouncedSearch) return activities;
+    const cleanSearch = debouncedSearch.toLowerCase().trim();
+    return activities.filter((activity) => {
+      // If task is still available in timelineTasks, it's matching
+      const matchesTimeline = activity.taskId && timelineTasks.some((t) => t.id === activity.taskId);
+      if (matchesTimeline) return true;
+      
+      // If task is deleted, fallback to matching by action name
+      const matchesAction = activity.action && activity.action.toLowerCase().includes(cleanSearch);
+      return !!matchesAction;
+    });
+  }, [activities, debouncedSearch, timelineTasks]);
 
   // Helper to render skeleton loaders or tasks inside columns
   const renderColumnContent = (columnTasks, emptyText, status) => {
@@ -241,11 +260,27 @@ const WorkspacePage = () => {
     }
 
     if (columnTasks.length === 0) {
+      if (debouncedSearch) {
+        return (
+          <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-[#E5E7EB] rounded-[16px] bg-white/50 text-slate-400 space-y-2.5 text-center min-h-[160px] select-none">
+            <div className="h-10 w-10 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100/60 shadow-sm mx-auto">
+              <ClipboardList className="h-5 w-5 text-slate-450" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-800 font-sans">No matching tasks</p>
+              <p className="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[200px]">
+                Try another keyword.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
       if (status === 'Pending') {
         return (
           <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-[#E5E7EB] rounded-[16px] bg-white/50 text-slate-400 space-y-2.5 text-center min-h-[160px] select-none">
             <div className="h-10 w-10 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100/60 shadow-sm mx-auto">
-              <ClipboardList className="h-5 w-5 text-slate-400" />
+              <ClipboardList className="h-5 w-5 text-slate-455" />
             </div>
             <div className="space-y-1">
               <p className="text-xs font-bold text-slate-800 font-sans">No pending tasks</p>
@@ -320,7 +355,11 @@ const WorkspacePage = () => {
       <WorkspaceHeader />
 
       {/* ── Today's Focus row metrics ── */}
-      <TodayFocus refreshTrigger={refreshTrigger} />
+      <TodayFocus
+        refreshTrigger={refreshTrigger}
+        searchActive={!!debouncedSearch}
+        searchTasks={timelineTasks}
+      />
 
       {/* ── Signature Task Timeline (Dynamic horizontal dates rail) ── */}
       <TaskTimeline
@@ -338,9 +377,16 @@ const WorkspacePage = () => {
         {/* Tasks Columns */}
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-[22px] font-bold text-[#111827] tracking-tight font-sans">
-              My Tasks
-            </h2>
+            <div className="flex items-baseline space-x-3">
+              <h2 className="text-[22px] font-bold text-[#111827] tracking-tight font-sans">
+                My Tasks
+              </h2>
+              {debouncedSearch && (
+                <span className="text-xs text-slate-400 font-medium font-sans">
+                  Showing {timelineTasks.length} {timelineTasks.length === 1 ? 'result' : 'results'} for "{debouncedSearch}"
+                </span>
+              )}
+            </div>
             
             {/* Filters and Sort Dropdown Controls */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
@@ -499,7 +545,7 @@ const WorkspacePage = () => {
           </div>
 
           <RecentActivity
-            activities={activities}
+            activities={searchFilteredActivities}
             isLoading={activityLoading}
             error={activityError}
             onRetry={fetchRecentActivity}

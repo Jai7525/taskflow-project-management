@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
-import { motion as motionDiv, AnimatePresence as AnimatePresenceWrapper } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import taskService from '../../services/taskService';
 import { toast } from 'react-hot-toast';
 
@@ -178,7 +178,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
 
     if (showDeleteConfirm) {
       return (
-        <motionDiv
+        <motion.div
           key="delete-confirm"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
@@ -194,7 +194,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
               <h4 className="text-xs font-bold text-slate-900 font-sans">
                 Delete this task?
               </h4>
-              <p className="text-[10px] text-slate-500 font-medium">
+              <p className="text-[10px] text-slate-505 font-medium">
                 This action cannot be undone.
               </p>
             </div>
@@ -219,13 +219,13 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
               <span>{isDeleting ? 'Deleting...' : 'Delete Permanently'}</span>
             </button>
           </div>
-        </motionDiv>
+        </motion.div>
       );
     }
 
     if (isEditing) {
       return (
-        <motionDiv
+        <motion.div
           key="edit-footer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -258,12 +258,12 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
             {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
           </button>
-        </motionDiv>
+        </motion.div>
       );
     }
 
     return (
-      <motionDiv
+      <motion.div
         key="normal-footer"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -275,7 +275,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
           type="button"
           onClick={isOffline ? showOfflineToast : () => setShowDeleteConfirm(true)}
           title={isOffline ? "Requires an internet connection" : "Delete task"}
-          className={`px-5 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm font-semibold transition ${
+          className={`px-5 py-2.5 bg-red-50 text-red-750 border border-red-200 rounded-xl text-sm font-semibold transition ${
             isOffline ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100/70 active:bg-red-200/50 cursor-pointer'
           }`}
         >
@@ -310,16 +310,16 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
             Close
           </button>
         </div>
-      </motionDiv>
+      </motion.div>
     );
   };
 
   return (
-    <AnimatePresenceWrapper>
+    <AnimatePresence>
       {isOpen && (
         <>
           {/* Backdrop overlay (Fade transition) */}
-          <motionDiv
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -331,7 +331,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
           />
 
           {/* Drawer Panel Container (Slide from right transition) */}
-          <motionDiv
+          <motion.div
             initial={{ opacity: 0, x: '100%' }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
@@ -360,7 +360,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
               <button
                 onClick={handleCloseAttempt}
                 disabled={isSaving || isDeleting}
-                className="p-1.5 text-slate-400 hover:text-slate-650 hover:bg-slate-50 rounded-xl transition cursor-pointer disabled:opacity-40"
+                className="p-1.5 text-slate-400 hover:text-slate-655 hover:bg-slate-50 rounded-xl transition cursor-pointer disabled:opacity-40"
                 aria-label="Close details"
               >
                 <X className="h-5 w-5" />
@@ -400,13 +400,13 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
             )}
 
             {/* Footer Panel Actions */}
-            <AnimatePresenceWrapper mode="wait">
+            <AnimatePresence mode="wait">
               {renderFooter()}
-            </AnimatePresenceWrapper>
-          </motionDiv>
+            </AnimatePresence>
+          </motion.div>
         </>
       )}
-    </AnimatePresenceWrapper>
+    </AnimatePresence>
   );
 };
 

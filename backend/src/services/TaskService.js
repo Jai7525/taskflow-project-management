@@ -45,9 +45,11 @@ class TaskService {
     }
 
     if (search) {
-      whereConditions.title = {
-        [Op.like]: `%${search}%`
-      };
+      const cleanSearch = search.trim();
+      whereConditions[Op.or] = [
+        { title: { [Op.like]: `%${cleanSearch}%` } },
+        { description: { [Op.like]: `%${cleanSearch}%` } }
+      ];
     }
 
     // Determine sort order
