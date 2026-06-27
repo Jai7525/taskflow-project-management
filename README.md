@@ -45,3 +45,51 @@ taskflow-task-management/
 8. **Phase 8:** Dashboard Features
 9. **Phase 9:** UI Polish
 10. **Phase 10:** Documentation
+
+---
+
+## Automated Testing
+
+TaskFlow contains a robust, isolated API integration testing suite powered by **Jest** and **Supertest**. The suite spans 18 focused test cases verifying HTTP status codes, payload validations, authorization restrictions, database mutations, and paginated listings.
+
+### Test Environment Requirements
+The tests run against a dedicated MySQL database named `taskflow_test_db`. 
+- The setup scripts automatically connect to your local MySQL server (configured via the environment variables in `backend/.env`) and construct `taskflow_test_db` if it does not already exist. 
+- All operations are ran with sequence locks (`--runInBand`) and tables are truncated before each test case, preserving your dev/prod workspace tables intact.
+
+### How to Install and Run Tests
+
+1. **Install Dependencies**
+   Navigate to the backend directory and ensure all dev dependencies are installed:
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. **Execute Tests**
+   Run the complete test suite sequentially:
+   ```bash
+   npm test
+   ```
+
+3. **Run in Watch Mode**
+   To execute tests incrementally during development:
+   ```bash
+   npm run test:watch
+   ```
+
+### Expected Output Example
+
+When running `npm test`, you should see output matching the following:
+
+```text
+PASS tests/auth.test.js
+PASS tests/tasks.test.js
+PASS tests/workspace.test.js
+
+Test Suites: 3 passed, 3 total
+Tests:       18 passed, 18 total
+Snapshots:   0 total
+Time:        3.425 s
+Ran all test suites.
+```
