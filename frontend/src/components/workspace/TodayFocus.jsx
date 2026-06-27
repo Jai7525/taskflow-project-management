@@ -46,7 +46,7 @@ const TodayFocus = ({ refreshTrigger }) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         <StatisticSkeleton />
         <StatisticSkeleton />
         <StatisticSkeleton />
@@ -91,7 +91,7 @@ const TodayFocus = ({ refreshTrigger }) => {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full"
     >
       <StatisticCard
         title="Total Tasks"

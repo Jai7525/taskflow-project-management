@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Calendar, AlertCircle, ClipboardList } from 'lucide-react';
@@ -218,14 +218,16 @@ const WorkspacePage = () => {
   };
 
   // Filter tasks client-side based on timeline's selectedDate
-  const filteredTasks = selectedDate
-    ? boardTasks.filter((task) => task.dueDate && task.dueDate.startsWith(selectedDate))
-    : boardTasks;
+  const filteredTasks = useMemo(() => {
+    return selectedDate
+      ? boardTasks.filter((task) => task.dueDate && task.dueDate.startsWith(selectedDate))
+      : boardTasks;
+  }, [boardTasks, selectedDate]);
 
   // Group filtered tasks by status
-  const pendingTasks = filteredTasks.filter((t) => t.status === 'Pending');
-  const inProgressTasks = filteredTasks.filter((t) => t.status === 'In Progress');
-  const completedTasks = filteredTasks.filter((t) => t.status === 'Completed');
+  const pendingTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Pending'), [filteredTasks]);
+  const inProgressTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'In Progress'), [filteredTasks]);
+  const completedTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'Completed'), [filteredTasks]);
 
   // Helper to render skeleton loaders or tasks inside columns
   const renderColumnContent = (columnTasks, emptyText, status) => {
@@ -335,19 +337,23 @@ const WorkspacePage = () => {
         
         {/* Tasks Columns */}
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="text-[22px] font-bold text-[#111827] tracking-tight font-sans">
               My Tasks
             </h2>
             
             {/* Filters and Sort Dropdown Controls */}
-            <div className="flex items-center space-x-3 self-end sm:self-auto">
-              <FilterTabs activeStatus={activeStatus} onStatusChange={handleStatusChange} />
-              <Dropdown
-                options={sortOptions}
-                value={sortOrder}
-                onChange={handleSortChange}
-              />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <div className="w-full sm:w-auto">
+                <FilterTabs activeStatus={activeStatus} onStatusChange={handleStatusChange} />
+              </div>
+              <div className="self-end sm:self-auto">
+                <Dropdown
+                  options={sortOptions}
+                  value={sortOrder}
+                  onChange={handleSortChange}
+                />
+              </div>
             </div>
           </div>
 
@@ -382,7 +388,7 @@ const WorkspacePage = () => {
           ) : (
             <>
               {/* Board 3-Columns Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                 
                 {/* Column 1: Pending */}
                 <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-[20px] p-4 flex flex-col space-y-4 transition-colors duration-[150ms] hover:border-slate-350">
@@ -485,7 +491,7 @@ const WorkspacePage = () => {
         </div>
 
         {/* Activity Log (moved below task board) */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] h-[370px] flex flex-col overflow-hidden">
+        <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] h-[320px] flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-4 shrink-0">
             <h3 className="text-[16px] font-bold text-[#111827] font-sans">
               Activity Log

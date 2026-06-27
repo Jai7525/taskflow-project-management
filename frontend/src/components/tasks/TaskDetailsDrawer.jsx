@@ -338,7 +338,7 @@ const TaskDetailsDrawer = ({ isOpen, taskId, onClose, onUpdate, isOffline = fals
             transition={{ duration: 0.25, ease: 'easeOut' }}
             role="dialog"
             aria-modal="true"
-            className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] md:w-[480px] bg-white border-l border-slate-200 shadow-2xl flex flex-col select-none"
+            className="fixed inset-0 lg:inset-y-0 lg:left-auto lg:right-0 z-50 w-full lg:w-[480px] h-full bg-white border-l border-slate-200 shadow-2xl flex flex-col select-none overflow-hidden"
           >
             {/* Header section */}
             <div className="py-5 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">

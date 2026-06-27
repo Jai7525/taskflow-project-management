@@ -140,7 +140,7 @@ const RecentActivity = ({ activities, isLoading, error, onRetry, onActivityClick
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            whileHover={{ y: -2 }}
+            whileHover={{ y: -2, scale: 1.01 }}
             tabIndex={0}
             onClick={() => onActivityClick && onActivityClick(activity)}
             onKeyDown={(e) => {

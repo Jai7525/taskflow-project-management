@@ -65,7 +65,7 @@ const TaskCard = ({ task, onClick }) => {
   return (
     <motion.div
       variants={cardVariants}
-      whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+      whileHover={{ y: -2, scale: 1.01, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
       onClick={() => onClick && onClick(task.id)}
       className={`bg-white border border-slate-200 hover:border-slate-350 rounded-[16px] p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 relative select-none cursor-pointer ${

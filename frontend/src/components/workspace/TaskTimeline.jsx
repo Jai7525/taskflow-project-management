@@ -208,24 +208,24 @@ const TaskTimeline = ({
         {/* Prev arrow */}
         <button
           onClick={handlePrevWeek}
-          className={NAV_BTN}
+          className={`${NAV_BTN} hidden md:flex`}
           aria-label="Previous 7 Days"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
 
         {/* ── Cards viewport ── */}
-        {/* overflow-visible is required so the TODAY badge (absolutely positioned above cards) is never clipped */}
-        <div className="flex-1 overflow-visible relative" style={{ minHeight: '124px' }}>
+        {/* overflow-visible on desktop, overflow-x-auto on mobile so the TODAY badge is never clipped but swipe works */}
+        <div className="flex-1 overflow-x-auto md:overflow-visible relative scrollbar-none pb-2 pt-2" style={{ minHeight: '124px' }}>
           {isLoading ? (
             /* Skeleton loader */
-            <div className="flex items-stretch gap-6">
+            <div className="flex items-stretch gap-4 md:gap-6">
               {Array.from({ length: 7 }).map((_, idx) => {
-                const hidden = idx >= 5 ? 'hidden lg:flex' : 'flex';
+                const hidden = idx >= 5 ? 'hidden md:flex' : 'flex';
                 return (
                   <div
                     key={idx}
-                    className={`${hidden} flex-1 flex-col items-center justify-center p-3.5 rounded-[14px] border border-slate-100 bg-white text-center animate-pulse h-[110px]`}
+                    className={`${hidden} flex-shrink-0 w-[130px] md:w-auto md:flex-1 flex flex-col items-center justify-center p-3.5 rounded-[14px] border border-slate-100 bg-white text-center animate-pulse h-[110px]`}
                   >
                     <div className="h-3 bg-slate-100 rounded w-8 mb-2" />
                     <div className="h-5 bg-slate-200/60 rounded w-14 mb-3" />
@@ -265,7 +265,7 @@ const TaskTimeline = ({
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="flex items-stretch gap-6 pt-4"
+                className="flex items-stretch gap-4 md:gap-6 w-max md:w-full"
               >
                 {timelineDays.map((day, idx) => {
                   const isSelected = selectedDate === day.dateStr;
@@ -277,15 +277,14 @@ const TaskTimeline = ({
                   const hasProgress = dayTasks.some((t) => t.status === 'In Progress');
                   const hasCompleted = dayTasks.some((t) => t.status === 'Completed');
 
-                  // Responsive visibility: hide last 2 on screens < lg
-                  const hidden = idx >= 5 ? 'hidden lg:flex' : 'flex';
+                  // Responsive visibility: hide last 2 only on narrow viewports *if* chevrons active, but since horizontal swipe works, let's keep all 7 scrollable on mobile!
+                  const hidden = 'flex';
 
                   /* ── Card visual state tokens ── */
                   let cardBase = '';
                   let dayNameColor = '';
                   let dayNumColor = '';
                   let countColor = '';
-                  let hoverStyle = {};
 
                   if (isSelected) {
                     // Restored: gradient fill, 24px radius, premium shadow
@@ -296,8 +295,6 @@ const TaskTimeline = ({
                     dayNameColor = 'text-indigo-200';
                     dayNumColor  = 'text-white';
                     countColor   = 'text-indigo-200';
-                    // No hover lift on selected
-                    hoverStyle = {};
                   } else if (day.isToday) {
                     // Today unselected — white bg, primary border
                     cardBase =
@@ -305,14 +302,12 @@ const TaskTimeline = ({
                     dayNameColor = 'text-slate-500';
                     dayNumColor  = 'text-slate-800';
                     countColor   = 'text-slate-400';
-                    hoverStyle = {};
                   } else {
                     // Default unselected
                     cardBase = 'bg-white border-[#E5E7EB]';
                     dayNameColor = 'text-slate-500';
                     dayNumColor  = 'text-slate-800';
                     countColor   = 'text-slate-400';
-                    hoverStyle = {};
                   }
 
                   return (
@@ -322,7 +317,7 @@ const TaskTimeline = ({
                       whileHover={!isSelected ? { y: -2 } : {}}
                       transition={{ duration: 0.15, ease: 'easeOut' }}
                       className={
-                        `${hidden} flex-1 flex-col items-center justify-center ` +
+                        `${hidden} flex-shrink-0 w-[130px] md:w-auto md:flex-1 flex-col items-center justify-center ` +
                         `p-3.5 border h-[110px] ` +
                         /* radius: selected gets 24px (set in cardBase), others 14px */
                         (!isSelected ? 'rounded-[14px] ' : '') +
@@ -394,7 +389,7 @@ const TaskTimeline = ({
         {/* Next arrow */}
         <button
           onClick={handleNextWeek}
-          className={NAV_BTN}
+          className={`${NAV_BTN} hidden md:flex`}
           aria-label="Next 7 Days"
         >
           <ChevronRight className="h-5 w-5" />

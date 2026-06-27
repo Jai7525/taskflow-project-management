@@ -20,7 +20,7 @@ const Sidebar = () => {
   }, [user]);
 
   return (
-    <aside className="w-[240px] bg-[#111827] flex flex-col h-screen select-none border-r border-[rgba(255,255,255,0.06)] shrink-0 p-4 transition-colors duration-200">
+    <aside className="hidden lg:flex w-[240px] bg-[#111827] flex-col h-screen select-none border-r border-[rgba(255,255,255,0.06)] shrink-0 p-4 transition-colors duration-200">
       {/* Brand Logo */}
       <div className="h-16 flex items-center px-4 mb-4">
         <div className="flex items-center space-x-3">

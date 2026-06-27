@@ -174,7 +174,7 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
             role="dialog"
             aria-modal="true"
             aria-labelledby="drawer-title"
-            className="fixed inset-y-0 right-0 z-50 w-full sm:w-[85%] md:w-[460px] bg-white border-l border-slate-200 shadow-2xl flex flex-col select-none"
+            className="fixed inset-0 lg:inset-y-0 lg:left-auto lg:right-0 z-50 w-full lg:w-[460px] h-full bg-white border-l border-slate-200 shadow-2xl flex flex-col select-none overflow-hidden"
           >
             {/* Header section */}
             <div className="py-5 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
@@ -182,175 +182,174 @@ const CreateTaskDrawer = ({ isOpen, onClose, onSuccess, defaultStatus = 'Pending
                 <h2 id="drawer-title" className="text-lg font-bold text-slate-900 font-sans">
                   Create New Task
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-505 mt-0.5">
                   Add a new task to stay organized and on track.
                 </p>
               </div>
               <button
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="p-1.5 text-slate-400 hover:text-slate-605 hover:bg-slate-50 rounded-xl transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 text-slate-400 hover:text-slate-650 hover:bg-slate-50 rounded-xl transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Close drawer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Scrollable Form area */}
+            {/* Form wrapping full layout, using flex column for sticky footer */}
             <form
               onSubmit={handleFormSubmit}
-              className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-none"
+              className="flex-1 flex flex-col overflow-hidden h-full"
             >
-              {/* API Level Global Error Notice */}
-              {apiError && (
-                <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-2 text-xs text-red-700 font-medium">
-                  <AlertCircle className="h-4.5 w-4.5 shrink-0 text-red-500 mt-0.5" />
-                  <span>{apiError}</span>
-                </div>
-              )}
-
-              {/* Task Title */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
-                  Task Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  ref={titleInputRef}
-                  disabled={isSubmitting}
-                  placeholder="Enter task title..."
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm ${
-                    errors.title ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
-                  }`}
-                />
-                {errors.title && (
-                  <p className="text-xs font-medium text-red-500 flex items-center space-x-1">
-                    <span>{errors.title}</span>
-                  </p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  rows={5}
-                  ref={descriptionInputRef}
-                  disabled={isSubmitting}
-                  placeholder="Add more details about this task..."
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm resize-none ${
-                    errors.description ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
-                  }`}
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold px-0.5">
-                  <span>Minimum 20 characters</span>
-                  <span className={formData.description.length > 500 ? 'text-red-500' : ''}>
-                    {formData.description.length} / 500 characters
-                  </span>
-                </div>
-                {errors.description && (
-                  <p className="text-xs font-medium text-red-500">
-                    {errors.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Grid: Status & Priority */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Status Selection */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
-                    Status <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    disabled={isSubmitting}
-                    value={formData.status}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                </div>
-
-                {/* Priority Selection */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
-                    Priority <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    disabled={isSubmitting}
-                    value={formData.priority}
-                    onChange={(e) => handleInputChange('priority', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
-                  >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Due Date picker */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
-                  Due Date <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Calendar className="h-4 w-4" />
+              {/* Scrollable Form area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-none">
+                {/* API Level Global Error Notice */}
+                {apiError && (
+                  <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-2 text-xs text-red-700 font-medium">
+                    <AlertCircle className="h-4.5 w-4.5 shrink-0 text-red-500 mt-0.5" />
+                    <span>{apiError}</span>
                   </div>
+                )}
+
+                {/* Task Title */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                    Task Title <span className="text-red-500">*</span>
+                  </label>
                   <input
-                    type={dueDateFocused || formData.dueDate ? "date" : "text"}
-                    onFocus={() => setDueDateFocused(true)}
-                    onBlur={() => setDueDateFocused(false)}
-                    placeholder="Select due date"
-                    min={todayStr}
-                    ref={dueDateInputRef}
+                    type="text"
+                    ref={titleInputRef}
                     disabled={isSubmitting}
-                    value={formData.dueDate}
-                    onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer ${
-                      errors.dueDate ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/5' : 'border-slate-200'
+                    placeholder="Enter task title..."
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 transition duration-150 text-sm hover:border-slate-300 ${
+                      errors.title ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500 bg-red-50/5' : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
                     }`}
                   />
+                  {errors.title && (
+                    <p className="text-xs font-medium text-red-500 flex items-center space-x-1">
+                      <span>{errors.title}</span>
+                    </p>
+                  )}
                 </div>
-                {errors.dueDate && (
-                  <p className="text-xs font-medium text-red-500">
-                    {errors.dueDate}
-                  </p>
-                )}
+
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                    Description <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    rows={5}
+                    ref={descriptionInputRef}
+                    disabled={isSubmitting}
+                    placeholder="Add more details about this task..."
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100/30 focus:bg-white border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 transition duration-150 text-sm resize-none hover:border-slate-300 ${
+                      errors.description ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500 bg-red-50/5' : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
+                    }`}
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-semibold px-0.5">
+                    <span>Minimum 20 characters</span>
+                    <span className={formData.description.length > 500 ? 'text-red-500' : ''}>
+                      {formData.description.length} / 500 characters
+                    </span>
+                  </div>
+                  {errors.description && (
+                    <p className="text-xs font-medium text-red-500">
+                      {errors.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Grid: Status & Priority */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Status Selection */}
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                      Status <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      disabled={isSubmitting}
+                      value={formData.status}
+                      onChange={(e) => handleInputChange('status', e.target.value)}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
+
+                  {/* Priority Selection */}
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                      Priority <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      disabled={isSubmitting}
+                      value={formData.priority}
+                      onChange={(e) => handleInputChange('priority', e.target.value)}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-350 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition duration-150 text-sm cursor-pointer"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Due Date picker */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 tracking-wide uppercase">
+                    Due Date <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Calendar className="h-4 w-4" />
+                    </div>
+                    <input
+                      type={dueDateFocused || formData.dueDate ? "date" : "text"}
+                      onFocus={() => setDueDateFocused(true)}
+                      onBlur={() => setDueDateFocused(false)}
+                      placeholder="Select due date"
+                      min={todayStr}
+                      ref={dueDateInputRef}
+                      disabled={isSubmitting}
+                      value={formData.dueDate}
+                      onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 focus:outline-none focus:ring-4 transition duration-150 text-sm cursor-pointer hover:border-slate-300 ${
+                        errors.dueDate ? 'border-red-300 focus:ring-red-500/10 focus:border-red-500 bg-red-50/5' : 'border-slate-200 focus:ring-[#6366F1]/10 focus:border-[#6366F1]'
+                      }`}
+                    />
+                  </div>
+                  {errors.dueDate && (
+                    <p className="text-xs font-medium text-red-500">
+                      {errors.dueDate}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* Action Buttons panel */}
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-end space-x-3">
-                <motion.button
-                  whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-                  whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+              {/* Action Buttons panel (Sticky Footer) */}
+              <div className="p-4 border-t border-slate-100 flex items-center justify-end space-x-3 bg-white shrink-0">
+                <button
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
                   className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-                  whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                </button>
+                <button
                   type="submit"
                   disabled={isSubmitting}
                   className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5053de] text-white rounded-xl text-sm font-semibold transition shadow-[0_1px_2px_rgba(99,102,241,0.15)] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center space-x-1.5"
                 >
                   {isSubmitting && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
                   <span>{isSubmitting ? 'Creating Task...' : 'Create Task'}</span>
-                </motion.button>
+                </button>
               </div>
             </form>
           </motion.div>

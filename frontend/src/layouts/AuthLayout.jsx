@@ -93,12 +93,12 @@ const AuthLayout = () => {
           {/* Hero copy */}
           <div className="space-y-4">
             <h1 className="text-4xl xl:text-5xl font-extrabold text-white leading-tight xl:leading-tight tracking-tight">
-              Manage projects.<br />
-              Track every task.<br />
-              <span style={{ color: '#a5b4fc' }}>Stay in sync.</span>
+              Manage your tasks.<br />
+              Track every milestone.<br />
+              <span style={{ color: '#a5b4fc' }}>Stay productive.</span>
             </h1>
             <p className="text-[#c7d2fe] text-base font-normal leading-[1.6] max-w-[480px]">
-              Everything your team needs in one workspace.
+              Everything you need in one workspace.
             </p>
           </div>
 
@@ -199,19 +199,7 @@ const AuthLayout = () => {
             </motion.div>
           </motion.div>
 
-          {/* Metrics row */}
-          <div className="flex items-center gap-12 pt-2">
-            {[
-              { value: '10k+', label: 'Teams' },
-              { value: '99.9%', label: 'Uptime' },
-              { value: '4.9★', label: 'Rating' },
-            ].map(({ value, label }) => (
-              <div key={label} className="flex flex-col items-start">
-                <span className="text-white font-bold text-lg leading-none tracking-tight">{value}</span>
-                <span className="text-slate-400 text-xs font-medium mt-1.5 uppercase tracking-wider">{label}</span>
-              </div>
-            ))}
-          </div>
+
         </motion.div>
       </div>
 
@@ -228,10 +216,10 @@ const AuthLayout = () => {
               <span className="text-slate-800 text-xl font-bold tracking-tight">TaskFlow</span>
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Manage projects. Track every task.
+              Manage your tasks. Track milestones.
             </h1>
             <p className="mt-2 text-slate-500 text-sm font-medium max-w-sm">
-              Everything your team needs in one workspace.
+              Everything you need in one workspace.
             </p>
           </div>
 

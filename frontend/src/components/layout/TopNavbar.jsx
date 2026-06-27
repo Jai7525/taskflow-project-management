@@ -51,7 +51,7 @@ const TopNavbar = ({
   }, [dropdownOpen]);
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-white border-b border-[#E5E7EB] flex items-center justify-between px-8 select-none">
+    <header className="hidden lg:flex sticky top-0 z-40 h-16 bg-white border-b border-[#E5E7EB] items-center justify-between px-8 select-none">
       
       {/* Wide Search Bar (SaaS style with Cmd+K indicator) */}
       <div className="max-w-[500px] w-full relative">
