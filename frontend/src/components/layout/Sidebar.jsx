@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { LayoutDashboard, LogOut, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 /**
@@ -24,8 +24,8 @@ const Sidebar = () => {
       {/* Brand Logo */}
       <div className="h-16 flex items-center px-4 mb-4">
         <div className="flex items-center space-x-3">
-          <div className="h-8 w-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
-            ⚡
+          <div className="h-8 w-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
+            <Zap className="h-[16px] w-[16px]" strokeWidth={2.2} />
           </div>
           <div>
             <span className="text-base font-extrabold tracking-tight text-white font-sans block">
@@ -55,17 +55,19 @@ const Sidebar = () => {
         {/* User Card */}
         <div className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-[rgba(255,255,255,0.08)] transition cursor-pointer">
           <div className="flex items-center space-x-3 min-w-0">
-            {user?.profileImage ? (
-              <img
-                src={user.profileImage}
-                alt="User"
-                className="h-9 w-9 rounded-full object-cover border border-[#374151] shrink-0"
-              />
-            ) : (
-              <div className="h-9 w-9 rounded-full bg-[#6366F1] text-white font-bold flex items-center justify-center text-[11px] font-sans tracking-wide border border-[#374151] shadow-sm shrink-0">
-                {initials}
-              </div>
-            )}
+            <div className="relative shrink-0">
+              {user?.profileImage ? (
+                <img
+                  src={user.profileImage}
+                  alt="User"
+                  className="h-9 w-9 rounded-full object-cover border border-white/20 shadow-md"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold flex items-center justify-center text-[11px] font-sans tracking-wide border border-white/20 shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+                  {initials}
+                </div>
+              )}
+            </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-white truncate">
                 {user?.name || 'TaskFlow User'}

@@ -6,6 +6,7 @@ const { sequelize } = require('./models');
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
+  console.log("Node version:", process.version);
   // Try connecting to the database and ensure the database exists
   await connectDatabase();
 

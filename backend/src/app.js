@@ -23,8 +23,14 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:5000',
-        description: 'Development Server'
+        url:
+          process.env.NODE_ENV === "production"
+            ? "https://taskflow-project-management.onrender.com"
+            : "http://localhost:5000",
+        description:
+          process.env.NODE_ENV === "production"
+            ? "Production Server"
+            : "Development Server"
       }
     ],
     components: {
@@ -149,6 +155,11 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Root Route Redirect to API Docs
+app.get('/', (req, res) => {
+  res.redirect('/api-docs');
+});
+
 // Swagger Documentation Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -183,12 +194,10 @@ app.use((err, req, res, next) => {
     console.error('Unhandled Server Error:', err);
   }
 
-  // Suppress internal error details in production to prevent leaking implementation specifics.
+  // Surface full error details for production debugging
   res.status(statusCode).json({
     success: false,
-    message: statusCode === 500 && process.env.NODE_ENV === 'production' 
-      ? 'An unexpected error occurred.' 
-      : message,
+    message: message,
     errors: err.errors || null
   });
 });

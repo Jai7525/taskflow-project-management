@@ -197,11 +197,11 @@ const TaskTimeline = ({
                 }
               }
             }}
-            className={NAV_BTN}
+            className="h-12 w-12 rounded-full border border-[#E2E8F0] bg-white text-slate-500 flex items-center justify-center shrink-0 cursor-pointer hover:bg-[#F8FAFC] hover:border-[#CBD5E1] hover:shadow-sm active:bg-slate-100 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 disabled:opacity-40 disabled:cursor-default"
             aria-label="Pick a date"
             tabIndex={0}
           >
-            <CalendarDays className="h-5 w-5" />
+            <CalendarDays className="h-[22px] w-[22px]" />
           </button>
           <input
             ref={dateInputRef}

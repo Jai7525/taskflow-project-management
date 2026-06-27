@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
  */
 const TaskDetailsView = ({ task }) => {
   const { user } = useAuth();
-  const userName = user?.name || 'Jayakumar M';
+  const userName = user?.name || 'User';
   
   const initials = React.useMemo(() => {
     if (!userName) return 'TU';

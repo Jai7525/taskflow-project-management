@@ -112,16 +112,16 @@ const TopNavbar = ({
             aria-expanded={dropdownOpen}
             aria-haspopup="true"
             aria-label="User profile settings menu"
-            className="flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#6366F1] rounded-full p-0.5 transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="relative flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#6366F1] rounded-full transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             {user?.profileImage ? (
               <img
                 src={user.profileImage}
                 alt="Avatar"
-                className="h-8 w-8 rounded-full object-cover border border-slate-200"
+                className="h-8 w-8 rounded-full object-cover border border-white/30 shadow-md"
               />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-[#6366F1] text-white font-bold flex items-center justify-center text-xs font-sans tracking-wide border-2 border-white shadow-sm">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold flex items-center justify-center text-xs font-sans tracking-wide border border-white/30 shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
                 {initials}
               </div>
             )}
@@ -141,12 +141,12 @@ const TopNavbar = ({
                 {/* User Info Header (Display-only, non-clickable) */}
                 <div className="p-5 flex flex-col items-start space-y-3.5">
                   {/* Avatar Initials */}
-                  <div className="h-9 w-9 rounded-full bg-[#6366F1] text-white font-bold flex items-center justify-center text-xs tracking-wide shadow-sm shrink-0">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold flex items-center justify-center text-xs tracking-wide border border-white/30 shadow-[0_2px_8px_rgba(99,102,241,0.25)] shrink-0">
                     {initials}
                   </div>
                   <div className="min-w-0 w-full">
                     <p className="text-sm font-bold text-slate-800 truncate">
-                      {user?.name || 'Jayakumar'}
+                      {user?.name || 'User'}
                     </p>
                     <p className="text-xs text-slate-500 truncate mt-1">
                       {user?.email || 'test@test.com'}

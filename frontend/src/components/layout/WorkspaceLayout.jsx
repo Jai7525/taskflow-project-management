@@ -94,10 +94,46 @@ const WorkspaceLayout = () => {
     };
   }, [isCreateDrawerOpen, isDetailsOpen]);
 
-  // Immediately commit search (called on Enter key) — bypasses debounce in WorkspacePage
-  const commitSearch = (value) => {
-    setSearchQuery(value);
+  // Compute initials avatar fallback
+  const initials = useMemo(() => {
+    if (!user || !user.name) return 'TU';
+    const parts = user.name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }, [user]);
+
+  const commitSearch = (query) => {
+    setSearchQuery(query);
     setSearchCommit((prev) => prev + 1);
+  };
+
+  const openCreateTaskDrawer = (status) => {
+    setCreateDrawerDefaultStatus(status || 'Pending');
+    setIsCreateDrawerOpen(true);
+  };
+
+  const closeCreateTaskDrawer = () => {
+    setIsCreateDrawerOpen(false);
+  };
+
+  const handleTaskCreated = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const openTaskDetailsDrawer = (taskId) => {
+    setSelectedTaskId(taskId);
+    setIsDetailsOpen(true);
+  };
+
+  const closeTaskDetailsDrawer = () => {
+    setSelectedTaskId(null);
+    setIsDetailsOpen(false);
+  };
+
+  const handleTaskUpdated = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   // Deduplicated offline action warning toast helper
@@ -108,33 +144,10 @@ const WorkspaceLayout = () => {
     });
   };
 
-  const openCreateTaskDrawer = (status = 'Pending') => {
-    if (isOffline) {
-      showOfflineToast();
-      return;
-    }
-    setCreateDrawerDefaultStatus(status);
-    setIsCreateDrawerOpen(true);
-  };
-
-  const openTaskDetailsDrawer = (taskId) => {
-    setSelectedTaskId(taskId);
-    setIsDetailsOpen(true);
-  };
-
-  // Generate initials for avatar fallback
-  const initials = useMemo(() => {
-    if (!user || !user.name) return 'TU';
-    const parts = user.name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0].substring(0, 2).toUpperCase();
-  }, [user]);
-
   return (
-    <div className="h-screen flex bg-bgPrimary font-sans overflow-hidden w-full relative">
-      {/* Desktop Fixed Sidebar */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#F6F8FB] text-slate-700 antialiased font-sans select-none">
+      
+      {/* ── DESKTOP SIDEBAR (lg:flex) ── */}
       <Sidebar />
 
       {/* Main View Area */}
@@ -152,8 +165,8 @@ const WorkspaceLayout = () => {
             </button>
             {/* Brand Logo */}
             <div className="flex items-center space-x-2 pl-1">
-              <div className="h-7 w-7 bg-[#6366F1] rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-[0_2px_6px_rgba(99,102,241,0.25)]">
-                ⚡
+              <div className="h-7 w-7 bg-[#6366F1] rounded-lg flex items-center justify-center text-white shadow-[0_2px_6px_rgba(99,102,241,0.25)]">
+                <Zap className="h-[14px] w-[14px]" strokeWidth={2.2} />
               </div>
               <span className="text-sm font-extrabold tracking-tight text-slate-800 font-sans">
                 TaskFlow
@@ -175,17 +188,19 @@ const WorkspaceLayout = () => {
             <div className="h-4 w-px bg-slate-200 mx-1" />
 
             {/* User Avatar */}
-            {user?.profileImage ? (
-              <img
-                src={user.profileImage}
-                alt="Avatar"
-                className="h-8 w-8 rounded-full object-cover border border-slate-200"
-              />
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-[#6366F1] text-white font-bold flex items-center justify-center text-[10px] font-sans tracking-wide border-2 border-white shadow-sm">
-                {initials}
-              </div>
-            )}
+            <div className="relative shrink-0">
+              {user?.profileImage ? (
+                <img
+                  src={user.profileImage}
+                  alt="Avatar"
+                  className="h-8 w-8 rounded-full object-cover border border-white/30 shadow-md"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold flex items-center justify-center text-[10px] font-sans tracking-wide border border-white/30 shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+                  {initials}
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -266,8 +281,8 @@ const WorkspaceLayout = () => {
               {/* Drawer Header */}
               <div className="h-16 flex items-center justify-between px-2 mb-4">
                 <div className="flex items-center space-x-2.5">
-                  <div className="h-8 w-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
-                    ⚡
+                  <div className="h-8 w-8 bg-[#6366F1] rounded-lg flex items-center justify-center text-white shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
+                    <Zap className="h-[16px] w-[16px]" strokeWidth={2.2} />
                   </div>
                   <div>
                     <span className="text-base font-extrabold tracking-tight text-white font-sans block">
@@ -304,17 +319,19 @@ const WorkspaceLayout = () => {
                 {/* User Card */}
                 <div className="flex items-center px-2 py-1.5 rounded-xl bg-white/5 border border-white/5">
                   <div className="flex items-center space-x-3 min-w-0">
-                    {user?.profileImage ? (
-                      <img
-                        src={user.profileImage}
-                        alt="User"
-                        className="h-8.5 w-8.5 rounded-full object-cover border border-[#374151] shrink-0"
-                      />
-                    ) : (
-                      <div className="h-8.5 w-8.5 rounded-full bg-[#6366F1] text-white font-bold flex items-center justify-center text-[10px] font-sans tracking-wide border border-[#374151] shadow-sm shrink-0">
-                        {initials}
-                      </div>
-                    )}
+                    <div className="relative shrink-0">
+                      {user?.profileImage ? (
+                        <img
+                          src={user.profileImage}
+                          alt="User"
+                          className="h-8.5 w-8.5 rounded-full object-cover border border-white/20 shadow-md"
+                        />
+                      ) : (
+                        <div className="h-8.5 w-8.5 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold flex items-center justify-center text-[10px] font-sans tracking-wide border border-white/20 shadow-[0_2px_8px_rgba(99,102,241,0.25)] shrink-0">
+                          {initials}
+                        </div>
+                      )}
+                    </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-white truncate">
                         {user?.name || 'TaskFlow User'}
