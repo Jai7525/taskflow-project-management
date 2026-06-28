@@ -149,7 +149,7 @@ TaskFlow follows a **layered architecture** that separates the user interface, b
 
 ----------
 
-# 🔄 Project Workflow
+# Project Workflow
 
 The following workflow illustrates how a user interacts with TaskFlow throughout the application.
 
@@ -525,7 +525,7 @@ TaskFlow is deployed using a modern cloud infrastructure.
 | 🌐 Frontend | Vercel |
 | ⚙️ Backend | Render |
 | 🗄️ Database | Aiven MySQL |
-| 📖 API Documentation | Swagger UI |
+| 📄 API Documentation | Swagger UI |
 
 ----------
 
