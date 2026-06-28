@@ -1,13 +1,4 @@
-# TaskFlow - Full-Stack Task Management Workspace
-
-![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)  
-![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white)  
-![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=white)  
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)  
-![Sequelize](https://img.shields.io/badge/Sequelize-52B0E7?style=for-the-badge&logo=sequelize&logoColor=white)  
-![JWT](https://img.shields.io/badge/JWT-Authentication-black?style=for-the-badge)  
-![Swagger](https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)  
-![Jest](https://img.shields.io/badge/Jest-Testing-C21325?style=for-the-badge&logo=jest&logoColor=white)  
+# TaskFlow - Full-Stack Task Management Workspace 
 
 ----------
 
@@ -144,7 +135,7 @@ TaskFlow follows a **layered architecture** that separates the user interface, b
 
 # System Architecture
 
-<img width="3232" height="188" alt="Image" src="https://github.com/user-attachments/assets/f9e76f05-2bbc-4877-802b-d73985a532f8" />
+<img width="3219" height="186" alt="Image" src="https://github.com/user-attachments/assets/dd5c6537-1425-4cdc-8366-bf8f2e0cb857" />
 
 ----------
 
@@ -235,7 +226,7 @@ The database is designed to maintain data integrity, preserve activity history, 
 
 ## Entity Relationship Diagram (ERD)
 
-<img width="789" height="2402" alt="Image" src="https://github.com/user-attachments/assets/6c4aa92f-e07c-4fad-81fb-2958b28c952c" />
+<img width="789" height="1402" alt="Image" src="https://github.com/user-attachments/assets/6c4aa92f-e07c-4fad-81fb-2958b28c952c" />
 
 ----------
 
