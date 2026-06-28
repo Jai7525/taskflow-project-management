@@ -4,13 +4,11 @@
 
 # Overview
 
-TaskFlow is a production-ready full-stack task management platform built with **React**, **Node.js**, **Express.js**, **MySQL**, and **Sequelize ORM**.
+TaskFlow is a production-ready full-stack task management platform built with React, Node.js, Express.js, MySQL, and Sequelize ORM.
 
-The application enables users to securely manage tasks through a modern SaaS-style workspace featuring JWT authentication, productivity dashboards, timeline planning, activity tracking, and complete task lifecycle management.
+Users can securely register, manage tasks, track progress, search and organize work, view productivity statistics, and monitor recent activity through a modern SaaS-style dashboard.
 
-Designed using a layered architecture, TaskFlow demonstrates modern software engineering practices including RESTful API development, secure authentication, request validation, modular frontend architecture, automated testing, API documentation, and cloud deployment.
-
-This project was built to showcase real-world full-stack development skills commonly required in modern software engineering teams.
+The project showcases real-world full-stack engineering practices, including JWT authentication, RESTful APIs, request validation, automated testing, Swagger API documentation, and cloud deployment.
 
 ----------
 
