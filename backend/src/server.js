@@ -17,20 +17,26 @@ const startServer = async () => {
     await sequelize.sync({ alter: true });
     console.log('Database tables synchronized successfully.');
 
-    // Seed a demo account so the app is immediately usable on first run.
-    // Credentials are hardcoded here intentionally — this is a local dev convenience, not a production user.
+    // Seed or restore the public demo account so it remains always usable with default credentials
     const { User } = require('./models');
     const demoEmail = 'admin@taskflow.com';
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash('Password123', 10);
+    
     const existingDemoUser = await User.findOne({ where: { email: demoEmail } });
     if (!existingDemoUser) {
-      const bcrypt = require('bcrypt');
-      const hashedPassword = await bcrypt.hash('Password123', 10);
       await User.create({
         name: 'Demo Admin',
         email: demoEmail,
         password: hashedPassword
       });
       console.log('Demo user seeded successfully.');
+    } else {
+      // Force reset the password on startup to prevent lockouts if users modify the demo password in production
+      existingDemoUser.name = 'Demo Admin';
+      existingDemoUser.password = hashedPassword;
+      await existingDemoUser.save();
+      console.log('Demo user credentials verified and restored.');
     }
   } catch (error) {
     console.error('Database synchronization failed:', error.message);
