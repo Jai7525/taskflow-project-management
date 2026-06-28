@@ -1,11 +1,28 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-const database = process.env.DB_NAME;
-const username = process.env.DB_USER || 'root';
-const password = process.env.DB_PASSWORD || '';
-const host = process.env.DB_HOST || 'localhost';
+const database = (process.env.DB_NAME || '').trim();
+const username = (process.env.DB_USER || 'root').trim();
+const password = (process.env.DB_PASSWORD || '').trim();
+const rawHost = process.env.DB_HOST || 'localhost';
+const host = rawHost.trim();
 const port = parseInt(process.env.DB_PORT, 10) || 26798;
+
+// DB Host Resolution Diagnostics for Render logs
+const dns = require('dns');
+console.log('--- DATABASE HOST RESOLUTION DIAGNOSTICS ---');
+console.log(`Raw DB_HOST from env: "${rawHost}"`);
+console.log(`Raw Length: ${rawHost.length}`);
+console.log(`Raw Char Codes: ${Array.from(rawHost).map(c => c.charCodeAt(0)).join(', ')}`);
+console.log(`Trimmed DB_HOST: "${host}"`);
+dns.lookup(host, (err, address, family) => {
+  if (err) {
+    console.error(`DNS lookup failed for "${host}":`, err.message);
+  } else {
+    console.log(`DNS lookup succeeded for "${host}": ${address} (IPv${family})`);
+  }
+});
+console.log('---------------------------------------------');
 
 const sequelize = new Sequelize(database, username, password, {
   host: host,
