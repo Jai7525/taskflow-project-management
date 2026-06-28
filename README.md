@@ -52,11 +52,19 @@ This project was built to showcase real-world full-stack development skills comm
 
 # Screenshots
 
+## Login
+
+Secure JWT-based authentication with responsive SaaS interface.
+
+<img width="1896" height="1035" alt="Image" src="https://github.com/user-attachments/assets/d953de0c-6cf7-443f-9505-331fe2f28f80" />
+
+----------
+
 ## Dashboard
 
 Modern productivity dashboard featuring workspace statistics, timeline planning, and task overview.
 
-![Dashboard Overview](screenshots/dashboard-overview.png)
+<img width="1906" height="846" alt="Image" src="https://github.com/user-attachments/assets/b973d699-0525-45f6-bf1a-9be328d6c715" />
 
 ----------
 
@@ -64,15 +72,7 @@ Modern productivity dashboard featuring workspace statistics, timeline planning,
 
 Kanban-style task management with Pending, In Progress, Completed workflows and recent activity tracking.
 
-![Task Board](screenshots/dashboard-board.png)
-
-----------
-
-## Login
-
-Secure JWT-based authentication with responsive SaaS interface.
-
-![Login](screenshots/login.png)
+<img width="1900" height="1037" alt="Image" src="https://github.com/user-attachments/assets/61e7059e-a117-4f2d-acb0-72f5476620f3" />
 
 ----------
 
@@ -80,7 +80,7 @@ Secure JWT-based authentication with responsive SaaS interface.
 
 Create and organize tasks with priority, due date, and status management.
 
-![Create Task](screenshots/create-task.png)
+<img width="1918" height="1028" alt="Image" src="https://github.com/user-attachments/assets/e9463338-2378-4417-8669-74c6839b3922" />
 
 ----------
 
@@ -88,7 +88,7 @@ Create and organize tasks with priority, due date, and status management.
 
 Interactive OpenAPI documentation for testing and exploring backend REST APIs.
 
-![Swagger API](screenshots/swagger-api.png)
+<img width="1896" height="1035" alt="Image" src="https://github.com/user-attachments/assets/f5a1d4a5-dfad-4718-a1c2-3b3892dff979" />
 
 ----------
 # Tech Stack
@@ -144,72 +144,19 @@ TaskFlow follows a **layered architecture** that separates the user interface, b
 
 # System Architecture
 
-```mermaid
-flowchart LR
-
-A[React + Vite Frontend]
-B[Express REST API]
-C[JWT Authentication Middleware]
-D[Controllers]
-E[Services]
-F[Sequelize ORM]
-G[(MySQL Database)]
-
-A -->|HTTP / JSON| B
-B --> C
-C --> D
-D --> E
-E --> F
-F --> G
-
-```
+<img width="3232" height="188" alt="Image" src="https://github.com/user-attachments/assets/f9e76f05-2bbc-4877-802b-d73985a532f8" />
 
 ----------
 
 # Backend Request Flow
 
-```mermaid
-flowchart LR
-
-Client --> Router
-Router --> Middleware
-Middleware --> Validator
-Validator --> Controller
-Controller --> Service
-Service --> Sequelize
-Sequelize --> MySQL
-MySQL --> Sequelize
-Sequelize --> Service
-Service --> Controller
-Controller --> Client
-
-```
+<img width="2642" height="210" alt="Image" src="https://github.com/user-attachments/assets/209e928e-5926-4585-90eb-9a4e3bb44e82" />
 
 ----------
 
 # Authentication Flow
 
-```mermaid
-sequenceDiagram
-
-participant User
-participant Frontend
-participant Backend
-participant Database
-
-User->>Frontend: Login
-Frontend->>Backend: POST /api/auth/login
-Backend->>Database: Verify Email
-Database-->>Backend: User Record
-Backend->>Backend: Compare Password (bcrypt)
-Backend->>Backend: Generate JWT Token
-Backend-->>Frontend: User + JWT
-Frontend->>Frontend: Store JWT
-Frontend->>Backend: Protected API Request
-Backend->>Backend: Verify JWT
-Backend-->>Frontend: Authorized Response
-
-```
+<img width="1800" height="1638" alt="Image" src="https://github.com/user-attachments/assets/25bd4b2d-1a7d-489d-b5e1-b0bc07250593" />
 
 ----------
 
@@ -217,36 +164,7 @@ Backend-->>Frontend: Authorized Response
 
 The following workflow illustrates how a user interacts with TaskFlow throughout the application.
 
-```mermaid
-flowchart TD
-
-A[Register Account]
-B[Login]
-C[Generate JWT Token]
-D[Load Dashboard]
-E[Create Task]
-F[Update Task]
-G[Complete Task]
-H[Delete Task]
-I[Activity Log]
-J[Dashboard Statistics]
-K[Logout]
-
-A --> B
-B --> C
-C --> D
-D --> E
-D --> F
-D --> G
-D --> H
-E --> I
-F --> I
-G --> I
-H --> I
-I --> J
-J --> K
-
-```
+<img width="1521" height="1596" alt="Image" src="https://github.com/user-attachments/assets/ba5aeedb-a1de-418b-95c7-f3782dd38cee" />
 
 ----------
 
@@ -317,43 +235,7 @@ The database is designed to maintain data integrity, preserve activity history, 
 
 ## Entity Relationship Diagram (ERD)
 
-```mermaid
-erDiagram
-
-USER ||--o{ TASK : owns
-USER ||--o{ ACTIVITY_LOG : performs
-TASK ||--o{ ACTIVITY_LOG : generates
-
-USER {
-    UUID id PK
-    STRING name
-    STRING email
-    STRING password
-    DATETIME createdAt
-    DATETIME updatedAt
-}
-
-TASK {
-    UUID id PK
-    STRING title
-    TEXT description
-    ENUM status
-    ENUM priority
-    DATE dueDate
-    UUID userId FK
-    DATETIME createdAt
-    DATETIME updatedAt
-}
-
-ACTIVITY_LOG {
-    UUID id PK
-    UUID taskId FK
-    UUID userId FK
-    STRING action
-    DATETIME createdAt
-}
-
-```
+<img width="789" height="2402" alt="Image" src="https://github.com/user-attachments/assets/6c4aa92f-e07c-4fad-81fb-2958b28c952c" />
 
 ----------
 
